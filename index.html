@@ -8,6 +8,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0d0d0d">
+  <!-- iPhoneに縦画面固定(portrait)を要求する設定を埋め込み -->
+  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%E5%BE%B3%E6%94%BF%22%2C%22short_name%22%3A%22%E5%BE%B3%E6%94%BF%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%7D'>
 
   <style>
     :root {
@@ -47,7 +49,6 @@
       overflow-y: auto;
       box-shadow: 0 0 30px rgba(0,0,0,0.8);
       border-radius: 0px;
-      /* 下部のタブバーにタスクが隠れないようにする余白を調整 */
       padding-bottom: calc(90px + env(safe-area-inset-bottom));
     }
 
@@ -59,7 +60,6 @@
       }
     }
 
-    /* ヘッダー (Safe Areaからの余白をギュッと詰めました) */
     .header {
       padding: calc(8px + env(safe-area-inset-top)) 16px 12px 16px;
       display: flex;
@@ -79,7 +79,6 @@
 
     .app-title { font-size: 22px; font-weight: bold; color: var(--rank-s); }
 
-    /* サイドメニュー Drawer */
     .drawer-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6);
@@ -91,7 +90,6 @@
       position: fixed; top: 0; left: 0; bottom: 0;
       width: 260px; background: #161618; border-right: 1px solid var(--card-border);
       z-index: 401; transform: translateX(-100%); transition: transform 0.3s ease;
-      /* 上部の余白を詰めました */
       padding: calc(16px + env(safe-area-inset-top)) 16px 24px 16px; display: flex; flex-direction: column; gap: 16px;
     }
     .drawer-overlay.active .drawer-content { transform: translateX(0); }
@@ -108,7 +106,6 @@
     .color-B { color: var(--rank-b) !important; }
     .color-F { color: var(--rank-f) !important; }
 
-    /* 今日画面 */
     .status-card {
       background: var(--card-bg); border: 1px solid var(--card-border);
       border-radius: 16px; margin: 0 16px 12px 16px; padding: 12px 16px; text-align: center;
@@ -143,13 +140,11 @@
       width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--text-sub);
       display: flex; align-items: center; justify-content: center; font-weight: bold;
     }
-    .task-item.completed .checkbox { background-color: var(--rank-f); border-color: var(--rank-f); color: #fff; }
     
     .task-time { font-size: 14px; font-weight: bold; color: var(--rank-s); line-height: 1.1; }
     .task-name { font-size: 17px; font-weight: 500; margin-top: 0; line-height: 1.2; }
-    .task-toku { font-size: 17px; font-weight: bold; color: var(--rank-s); }
+    .task-toku { font-size: 17px; font-weight: bold; color: var(--rank-s); text-align: right; }
 
-    /* 結果画面 */
     .segment-control { display: flex; background: #1c1c1e; border-radius: 10px; padding: 2px; margin: 0 16px 16px 16px; }
     .segment-btn {
       flex: 1; padding: 10px 0; text-align: center; font-size: 14px; color: var(--text-sub);
@@ -200,7 +195,6 @@
       border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 8px; outline: none; min-height: 44px;
     }
 
-    /* 徳画面 */
     .wallet-hero { text-align: center; padding: 10px 16px 20px 16px; }
     .wallet-hero-label { font-size: 15px; color: var(--text-sub); }
     .wallet-hero-val { font-size: 52px; font-weight: bold; color: var(--rank-b); margin: 6px 0 16px 0; }
@@ -221,7 +215,6 @@
     .history-val.plus { color: var(--rank-b); }
     .history-val.minus { color: var(--rank-a); }
 
-    /* カレンダー画面 */
     .calendar-header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 10px 8px 10px; font-size: 16px; font-weight: bold; }
     .cal-monthly-summary {
       background: var(--card-bg); border: 1px solid var(--card-border);
@@ -244,7 +237,6 @@
     .cal-ledger-blue { font-size: 10px; color: var(--rank-f); font-weight: bold; }
     .cal-ledger-red { font-size: 10px; color: var(--rank-a); font-weight: bold; }
 
-    /* モーダル共通 (Safe Area対応: 隙間を詰めました) */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75);
       display: flex; align-items: flex-end; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
@@ -252,7 +244,6 @@
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-content {
       background: #1c1c1e; border-top-left-radius: 20px; border-top-right-radius: 20px;
-      /* 下部の余白を詰めました */
       padding: 20px 20px calc(12px + env(safe-area-inset-bottom)) 20px; width: 100%; border-top: 1px solid var(--card-border);
       max-height: 85vh; overflow-y: auto;
     }
@@ -269,15 +260,14 @@
     .btn-modal.submit-blue { background: var(--rank-f); color: #fff; }
     .btn-modal.submit-green { background: var(--rank-b); color: #000; }
     .btn-modal.submit-red { background: var(--rank-a); color: #fff; }
+    
     .settings-task-item {
       background: #242428; border: 1px solid var(--card-border); border-radius: 10px;
       padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; min-height: 44px;
     }
 
-    /* 下部タブバー (Safe Area対応: 隙間を詰めました) */
     .tab-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
-      /* 高さを少し短くしてスタイリッシュに */
       height: calc(56px + env(safe-area-inset-bottom));
       padding-bottom: env(safe-area-inset-bottom);
       background: #121212; border-top: 1px solid var(--card-border);
@@ -293,7 +283,6 @@
     .page { display: none; }
     .page.active { display: block; }
     .toast {
-      /* トーストの位置も少し下げました */
       position: fixed; bottom: calc(75px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
       background: rgba(40, 40, 40, 0.9); color: #fff; padding: 12px 20px;
       border-radius: 20px; font-size: 14px; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 500;
@@ -315,9 +304,9 @@
   <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)">
     <div class="drawer-content" onclick="event.stopPropagation()">
       <div class="drawer-title">👑 徳政 メニュー</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ タスク・テンプレート設定</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.α.16');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.0');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -372,7 +361,6 @@
       <div class="main-summary-rate" id="res-main-rate">達成率 0%</div>
     </div>
 
-    <!-- 枠の縦幅をしっかり使い、数値を大きく -->
     <div class="result-toku-summary-box">
       <div><div style="color:var(--text-sub); font-size:13px;">獲得徳</div><div id="res-toku-earned" style="font-weight:bold; color:var(--rank-s); font-size:22px; margin-top:4px;">0</div></div>
       <div><div style="color:var(--text-sub); font-size:13px;">消費徳</div><div id="res-toku-spent" style="font-weight:bold; color:var(--rank-a); font-size:22px; margin-top:4px;">0</div></div>
@@ -448,7 +436,11 @@
   <!-- モーダル: 設定画面 -->
   <div class="modal-overlay" id="settings-modal" onclick="closeModal('settings-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-title">⚙️ 任務・テンプレート設定</div>
+      
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>⚙️ 任務・テンプレート設定</span>
+        <button onclick="requestNotify()" style="background:var(--rank-f); border:none; color:#fff; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">🔔通知を許可</button>
+      </div>
 
       <div class="input-group">
         <label class="input-label">編集・適用するテンプレート</label>
@@ -473,7 +465,7 @@
         </div>
       </div>
 
-      <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">登録中の任務一覧 (時間順)</div>
+      <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">登録中の任務一覧 (直接編集・保存されます)</div>
       <div id="settings-task-list"></div>
 
       <div style="background:#242428; border:1px solid var(--card-border); border-radius:10px; padding:12px; margin-top:12px;">
@@ -483,11 +475,11 @@
           <input type="time" id="new-task-time" class="input-field" style="padding:8px;" required>
           <input type="number" id="new-task-toku" class="input-field" placeholder="獲得徳" style="padding:8px;">
         </div>
-        <button class="btn-modal submit-green" onclick="addNewTaskSetting(); closeModal('settings-modal');">追加</button>
+        <button class="btn-modal submit-green" onclick="addNewTaskSetting();">リストに追加</button>
       </div>
 
       <div class="modal-buttons" style="margin-top:24px;">
-        <button class="btn-modal cancel" onclick="closeModal('settings-modal')">閉じる</button>
+        <button class="btn-modal cancel" onclick="closeModal('settings-modal')">完了（閉じる）</button>
       </div>
     </div>
   </div>
@@ -594,16 +586,28 @@
 
   <script>
     function getTimeValue(timeStr) {
-      if (!timeStr) return 9999;
+      if (!timeStr) return 99999;
       const match = String(timeStr).match(/(\d{1,2}):(\d{2})/);
-      if (match) {
-        return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-      }
-      return 9999;
+      if (match) return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+      return 99999;
+    }
+
+    function getLogicalMinutes(timeStr) {
+      if (!timeStr) return 99999;
+      let m = getTimeValue(timeStr);
+      if (m < 4 * 60) m += 24 * 60;
+      return m;
+    }
+
+    function getCurrentLogicalMinutes() {
+      const now = new Date();
+      let m = now.getHours() * 60 + now.getMinutes();
+      if (m < 4 * 60) m += 24 * 60;
+      return m;
     }
 
     function sortTasksByTime(taskList) {
-      return taskList.sort((a, b) => getTimeValue(a.time) - getTimeValue(b.time));
+      return taskList.sort((a, b) => getLogicalMinutes(a.time) - getLogicalMinutes(b.time));
     }
 
     const padTime = (t) => (t && t.length === 4 && t.includes(':')) ? "0" + t : (t || "");
@@ -656,6 +660,17 @@
     let currentResultPeriod = 'day';
     let resultBaseDate = new Date(todayDateObj);
 
+    function requestNotify() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(p => {
+          if (p === 'granted') showToast('通知が許可されました');
+          else showToast('通知がブロックされています');
+        });
+      } else {
+        showToast('このブラウザは通知に対応していません');
+      }
+    }
+
     function calculateRank(rate) {
       if (rate >= 90) return 'S';
       if (rate >= 70) return 'A';
@@ -667,6 +682,160 @@
       const drawer = document.getElementById('drawer-overlay');
       if (open) drawer.classList.add('active');
       else drawer.classList.remove('active');
+    }
+
+    function updateUI() {
+      sortTasksByTime(tasks);
+
+      const taskListEl = document.getElementById('task-list');
+      taskListEl.innerHTML = '';
+
+      let completedCount = 0;
+      let earnedToku = 0;
+      let totalToku = 0;
+
+      tasks.forEach(task => {
+        totalToku += task.toku;
+        if (task.completed && !task.failed) {
+          completedCount++;
+          earnedToku += task.toku;
+          if (task.earnedBonus) earnedToku += task.earnedBonus;
+        }
+      });
+
+      const displayTasks = [...tasks].sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return getLogicalMinutes(a.time) - getLogicalMinutes(b.time); 
+      });
+
+      displayTasks.forEach(task => {
+        const taskEl = document.createElement('div');
+        
+        let completedClass = task.completed ? 'completed' : '';
+        let checkboxHtml = '<div class="checkbox"></div>';
+        let displayToku = `${task.toku}徳`;
+
+        if (task.completed) {
+          if (task.failed) {
+            completedClass += ' failed';
+            checkboxHtml = `<div class="checkbox" style="background-color: var(--rank-f); border-color: var(--rank-f); color: #fff;">×</div>`;
+            displayToku = `<span style="text-decoration: line-through; color: var(--text-sub);">${task.toku}徳</span>`;
+          } else {
+            checkboxHtml = `<div class="checkbox" style="background-color: var(--rank-s); border-color: var(--rank-s); color: #000;">✓</div>`;
+            if (task.earnedBonus) {
+              displayToku = `${task.toku}徳 <span style="color:var(--rank-s); font-size:13px; display:block; margin-top:2px;">+${task.earnedBonus}ボーナス</span>`;
+            }
+          }
+        }
+
+        taskEl.className = `task-item ${completedClass}`;
+        taskEl.innerHTML = `
+          <div class="task-left">
+            ${checkboxHtml}
+            <div>
+              <div class="task-time">${task.time}</div>
+              <div class="task-name">${task.name}</div>
+            </div>
+          </div>
+          <div class="task-toku">${displayToku}</div>
+        `;
+
+        let pressTimer;
+        let isLongPress = false;
+
+        const startPress = (e) => {
+          isLongPress = false;
+          pressTimer = setTimeout(() => {
+            isLongPress = true;
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            if (task.completed) {
+              task.completed = false;
+              task.failed = false;
+              task.earnedBonus = 0;
+              saveAndRefresh();
+            } else {
+              if (confirm(`「${task.name}」を本日のみ削除しますか？`)) {
+                tasks = tasks.filter(t => t.id !== task.id);
+                saveAndRefresh();
+              }
+            }
+          }, 1200);
+        };
+
+        const cancelPress = () => clearTimeout(pressTimer);
+
+        taskEl.addEventListener('touchstart', startPress, {passive: true});
+        taskEl.addEventListener('touchmove', cancelPress, {passive: true});
+        taskEl.addEventListener('touchend', cancelPress);
+        taskEl.addEventListener('mousedown', startPress);
+        taskEl.addEventListener('mouseup', cancelPress);
+        taskEl.addEventListener('mouseleave', cancelPress);
+
+        taskEl.addEventListener('click', (e) => {
+          if (isLongPress || e.target.tagName.toLowerCase() === 'input') {
+            e.preventDefault();
+            return;
+          }
+          if (!task.completed) {
+            task.completed = true;
+            task.failed = false;
+            
+            const nowMins = getCurrentLogicalMinutes();
+            
+            if (task.bonusTime && task.bonusToku) {
+              if (nowMins <= getLogicalMinutes(task.bonusTime)) {
+                task.earnedBonus = parseInt(task.bonusToku, 10);
+                showToast(`早期達成ボーナス +${task.bonusToku}徳！`);
+              }
+            }
+
+            if (task.deadline && nowMins > getLogicalMinutes(task.deadline)) {
+              task.failed = true;
+              task.earnedBonus = 0;
+              showToast('期限切れのため失敗扱いです');
+            }
+
+            saveAndRefresh();
+          } else {
+            showToast('解除するには長押ししてください');
+          }
+        });
+
+        taskListEl.appendChild(taskEl);
+      });
+
+      const completionRate = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+      const currentRank = calculateRank(completionRate);
+
+      dailyRecords[todayStr] = {
+        rate: completionRate,
+        rank: currentRank,
+        earned: earnedToku,
+        tasks: JSON.parse(JSON.stringify(tasks))
+      };
+      localStorage.setItem('tokusei_daily_records', JSON.stringify(dailyRecords));
+
+      const rankDisplay = document.getElementById('rank-display');
+      rankDisplay.innerText = currentRank;
+      rankDisplay.className = `status-value color-${currentRank}`;
+
+      document.getElementById('rate-display').innerText = `${completionRate}%`;
+      document.getElementById('toku-display').innerText = `${earnedToku}徳`;
+      document.getElementById('total-possible-toku').innerText = `合計 ${totalToku}徳`;
+
+      const progressBar = document.getElementById('progress-fill');
+      progressBar.style.width = `${completionRate}%`;
+
+      const nextText = document.getElementById('next-rank-text');
+      if (completionRate < 50) nextText.innerText = `あと ${50 - completionRate}% で Bランク`;
+      else if (completionRate < 70) nextText.innerText = `あと ${70 - completionRate}% で Aランク`;
+      else if (completionRate < 90) nextText.innerText = `あと ${90 - completionRate}% で Sランク`;
+      else nextText.innerText = `最高ランク（S）達成！`;
+
+      updateResultView();
+      updateWalletUI();
+      renderCalendar();
     }
 
     function openSettings() {
@@ -721,126 +890,95 @@
       showToast('特殊期間設定を削除しました');
     }
 
-    function updateUI() {
-      sortTasksByTime(tasks);
+    function renderSettingsTaskList() {
+      const targetTasks = templates[currentEditingTemplate] || [];
+      sortTasksByTime(targetTasks);
+      
+      const listEl = document.getElementById('settings-task-list');
+      listEl.innerHTML = '';
 
-      const taskListEl = document.getElementById('task-list');
-      taskListEl.innerHTML = '';
-
-      let completedCount = 0;
-      let earnedToku = 0;
-      let totalToku = 0;
-
-      tasks.forEach(task => {
-        totalToku += task.toku;
-        if (task.completed) {
-          completedCount++;
-          earnedToku += task.toku;
-        }
-      });
-
-      const displayTasks = [...tasks].sort((a, b) => {
-        if (a.completed !== b.completed) {
-          return a.completed ? 1 : -1;
-        }
-        return getTimeValue(a.time) - getTimeValue(b.time); 
-      });
-
-      displayTasks.forEach(task => {
-        const taskEl = document.createElement('div');
-        taskEl.className = `task-item ${task.completed ? 'completed' : ''}`;
+      targetTasks.forEach((t) => {
+        const item = document.createElement('div');
+        item.className = 'settings-task-item';
+        item.style.flexDirection = 'column';
+        item.style.alignItems = 'stretch';
+        item.style.gap = '8px';
         
-        taskEl.innerHTML = `
-          <div class="task-left">
-            <div class="checkbox">${task.completed ? '✓' : ''}</div>
-            <div>
-              <div class="task-time">${task.time}</div>
-              <div class="task-name">${task.name}</div>
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:6px; align-items:center;">
+            <input type="time" value="${t.time || ''}" onchange="updateTaskSetting(${t.id}, 'time', this.value)" class="input-field" style="padding:6px; width:80px; min-height:36px; text-align:center;">
+            <input type="text" value="${t.name}" onchange="updateTaskSetting(${t.id}, 'name', this.value)" class="input-field" style="padding:6px; flex:1; min-height:36px;">
+            <input type="number" value="${t.toku}" onchange="updateTaskSetting(${t.id}, 'toku', this.value)" class="input-field" style="padding:6px; width:55px; min-height:36px; text-align:center;">
+            <button style="background:var(--rank-a); border:none; color:#fff; border-radius:6px; padding:0; width:36px; height:36px; font-size:16px; cursor:pointer;" onclick="deleteTaskSetting(${t.id})">×</button>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--text-sub); align-items:center; background:#1c1c1e; padding:8px; border-radius:8px;">
+            <label style="display:flex; align-items:center; gap:4px; color:var(--text-main);">
+              <input type="checkbox" ${t.remind ? 'checked' : ''} onchange="updateTaskSetting(${t.id}, 'remind', this.checked)" style="transform:scale(1.2);"> 🔔通知
+            </label>
+            <div style="display:flex; align-items:center; gap:4px;">
+              期限: <input type="time" value="${t.deadline || ''}" onchange="updateTaskSetting(${t.id}, 'deadline', this.value)" class="input-field" style="padding:4px; width:70px; min-height:28px; font-size:11px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span style="color:var(--rank-b);">ボ:</span> 
+              <input type="time" value="${t.bonusTime || ''}" onchange="updateTaskSetting(${t.id}, 'bonusTime', this.value)" class="input-field" style="padding:4px; width:70px; min-height:28px; font-size:11px;">
+              <span style="color:var(--text-sub);">迄</span>
+              <input type="number" value="${t.bonusToku || ''}" onchange="updateTaskSetting(${t.id}, 'bonusToku', this.value)" class="input-field" style="padding:4px; width:45px; min-height:28px; font-size:11px;" placeholder="+徳">
             </div>
           </div>
-          <div class="task-toku">${task.toku}徳</div>
         `;
-
-        let pressTimer;
-        let isLongPress = false;
-
-        const startPress = (e) => {
-          isLongPress = false;
-          // 長押しの時間を1200msに延長
-          pressTimer = setTimeout(() => {
-            isLongPress = true;
-            if (navigator.vibrate) navigator.vibrate(50);
-            
-            if (task.completed) {
-              task.completed = false;
-              saveAndRefresh();
-            } else {
-              if (confirm(`「${task.name}」を本日のみ削除しますか？`)) {
-                tasks = tasks.filter(t => t.id !== task.id);
-                saveAndRefresh();
-              }
-            }
-          }, 1200);
-        };
-
-        const cancelPress = () => {
-          clearTimeout(pressTimer);
-        };
-
-        taskEl.addEventListener('touchstart', startPress, {passive: true});
-        taskEl.addEventListener('touchmove', cancelPress, {passive: true});
-        taskEl.addEventListener('touchend', cancelPress);
-        taskEl.addEventListener('mousedown', startPress);
-        taskEl.addEventListener('mouseup', cancelPress);
-        taskEl.addEventListener('mouseleave', cancelPress);
-
-        taskEl.addEventListener('click', (e) => {
-          if (isLongPress) {
-            e.preventDefault();
-            return;
-          }
-          if (!task.completed) {
-            task.completed = true;
-            saveAndRefresh();
-          } else {
-            showToast('解除するには長押ししてください');
-          }
-        });
-
-        taskListEl.appendChild(taskEl);
+        listEl.appendChild(item);
       });
+    }
 
-      const completionRate = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
-      const currentRank = calculateRank(completionRate);
+    function updateTaskSetting(id, key, value) {
+      const targetTasks = templates[currentEditingTemplate];
+      const task = targetTasks.find(t => t.id === id);
+      if (task) {
+        if (key === 'toku' || key === 'bonusToku') task[key] = value === '' ? 0 : parseInt(value, 10);
+        else task[key] = value;
+        
+        localStorage.setItem('tokusei_templates', JSON.stringify(templates));
+        
+        tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+        saveAndRefresh();
+      }
+    }
 
-      dailyRecords[todayStr] = {
-        rate: completionRate,
-        rank: currentRank,
-        earned: earnedToku,
-        tasks: JSON.parse(JSON.stringify(tasks))
-      };
-      localStorage.setItem('tokusei_daily_records', JSON.stringify(dailyRecords));
+    function addNewTaskSetting() {
+      const name = document.getElementById('new-task-name').value.trim();
+      const time = document.getElementById('new-task-time').value;
+      const toku = parseInt(document.getElementById('new-task-toku').value, 10);
 
-      const rankDisplay = document.getElementById('rank-display');
-      rankDisplay.innerText = currentRank;
-      rankDisplay.className = `status-value color-${currentRank}`;
+      if (!name || !time || isNaN(toku)) {
+        showToast('項目を入力してください');
+        return;
+      }
 
-      document.getElementById('rate-display').innerText = `${completionRate}%`;
-      document.getElementById('toku-display').innerText = `${earnedToku}徳`;
-      document.getElementById('total-possible-toku').innerText = `合計 ${totalToku}徳`;
+      templates[currentEditingTemplate].push({ 
+        id: Date.now(), name, time, toku, completed: false, failed: false, 
+        remind: false, deadline: '', bonusTime: '', bonusToku: 0 
+      });
+      
+      sortTasksByTime(templates[currentEditingTemplate]);
+      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
 
-      const progressBar = document.getElementById('progress-fill');
-      progressBar.style.width = `${completionRate}%`;
+      document.getElementById('new-task-name').value = '';
+      document.getElementById('new-task-toku').value = '';
 
-      const nextText = document.getElementById('next-rank-text');
-      if (completionRate < 50) nextText.innerText = `あと ${50 - completionRate}% で Bランク`;
-      else if (completionRate < 70) nextText.innerText = `あと ${70 - completionRate}% で Aランク`;
-      else if (completionRate < 90) nextText.innerText = `あと ${90 - completionRate}% で Sランク`;
-      else nextText.innerText = `最高ランク（S）達成！`;
+      renderSettingsTaskList();
+      tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+      saveAndRefresh();
+      showToast('リストに任務を追加しました');
+    }
 
-      updateResultView();
-      updateWalletUI();
-      renderCalendar();
+    function deleteTaskSetting(id) {
+      if(!confirm('この任務を削除しますか？')) return;
+      templates[currentEditingTemplate] = templates[currentEditingTemplate].filter(t => t.id !== id);
+      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
+      renderSettingsTaskList();
+      tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+      saveAndRefresh();
+      showToast('任務を削除しました');
     }
 
     function getWeekRange(date) {
@@ -926,16 +1064,16 @@
           tEarned = record ? record.earned : 0;
           
           if (record) {
-            const achieved = record.tasks.filter(t => t.completed);
-            const unachieved = record.tasks.filter(t => !t.completed);
+            const achieved = record.tasks.filter(t => t.completed && !t.failed);
+            const unachieved = record.tasks.filter(t => !t.completed || t.failed);
 
             if (achieved.length > 0) {
-              achieved.forEach(t => achievedEl.innerHTML += `<div>・${t.name} (${t.time}) <span style="color:var(--rank-s)">+${t.toku}徳</span></div>`);
+              achieved.forEach(t => achievedEl.innerHTML += `<div>・${t.name} (${t.time}) <span style="color:var(--rank-s)">+${t.toku + (t.earnedBonus || 0)}徳</span></div>`);
             } else {
               achievedEl.innerHTML = '<div>なし</div>';
             }
             if (unachieved.length > 0) {
-              unachieved.forEach(t => unachievedEl.innerHTML += `<div>・${t.name} (${t.time})</div>`);
+              unachieved.forEach(t => unachievedEl.innerHTML += `<div>・${t.name} (${t.time}) ${t.failed ? '<span style="color:var(--rank-f); font-size:12px;">(期限切れ)</span>' : ''}</div>`);
             } else {
               unachievedEl.innerHTML = '<div>なし</div>';
             }
@@ -1122,7 +1260,6 @@
       showToast('PDCAノートを保存しました');
     }
 
-    // --- カレンダー・出納帳 ---
     let currentCalYear = todayDateObj.getFullYear();
     let currentCalMonth = todayDateObj.getMonth() + 1;
 
@@ -1327,71 +1464,6 @@
       }
     }
 
-    function changeEditingTemplate(val) {
-      currentEditingTemplate = val;
-      const specialContainer = document.getElementById('special-period-container');
-      if (val === 'special') {
-        specialContainer.style.display = 'block';
-        renderSpecialPeriod();
-      } else {
-        specialContainer.style.display = 'none';
-      }
-      renderSettingsTaskList();
-    }
-
-    function renderSettingsTaskList() {
-      const targetTasks = templates[currentEditingTemplate] || [];
-      sortTasksByTime(targetTasks);
-      
-      const listEl = document.getElementById('settings-task-list');
-      listEl.innerHTML = '';
-
-      targetTasks.forEach((t, idx) => {
-        const item = document.createElement('div');
-        item.className = 'settings-task-item';
-        item.innerHTML = `
-          <div>
-            <div style="font-weight:bold; font-size:14px;">${t.name}</div>
-            <div style="font-size:12px; color:var(--text-sub);">${t.time} • ${t.toku}徳</div>
-          </div>
-          <button style="background:var(--rank-a); border:none; color:#fff; border-radius:6px; padding:10px 14px; font-size:13px; cursor:pointer; min-height:36px;" onclick="deleteTaskSetting(${idx})">削除</button>
-        `;
-        listEl.appendChild(item);
-      });
-    }
-
-    function addNewTaskSetting() {
-      const name = document.getElementById('new-task-name').value.trim();
-      const time = document.getElementById('new-task-time').value;
-      const toku = parseInt(document.getElementById('new-task-toku').value, 10);
-
-      if (!name || !time || isNaN(toku)) {
-        showToast('項目を入力してください');
-        return;
-      }
-
-      templates[currentEditingTemplate].push({ id: Date.now(), name, time, toku, completed: false });
-      sortTasksByTime(templates[currentEditingTemplate]);
-      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
-
-      document.getElementById('new-task-name').value = '';
-      document.getElementById('new-task-toku').value = '';
-
-      renderSettingsTaskList();
-      tasks = [...templates[currentEditingTemplate]];
-      saveAndRefresh();
-      showToast('任務を追加しました');
-    }
-
-    function deleteTaskSetting(idx) {
-      templates[currentEditingTemplate].splice(idx, 1);
-      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
-      renderSettingsTaskList();
-      tasks = [...templates[currentEditingTemplate]];
-      saveAndRefresh();
-      showToast('任務を削除しました');
-    }
-
     function updateWalletUI(taskEarnedToku = 0) {
       let specialSum = 0, spendSum = 0;
       transactions.forEach(t => {
@@ -1445,7 +1517,6 @@
 
           const startPress = (e) => {
             isLongPress = false;
-            // 長押しの時間を1200msに延長
             pressTimer = setTimeout(() => {
               isLongPress = true;
               if (navigator.vibrate) navigator.vibrate(50);
@@ -1459,7 +1530,6 @@
             }, 1200);
           };
 
-          // スクロール等のタッチ移動で長押しタイマーを即キャンセル
           const cancelPress = () => clearTimeout(pressTimer);
 
           itemEl.addEventListener('touchstart', startPress, {passive: true});
@@ -1553,6 +1623,35 @@
       element.classList.add('active');
       if (tabName === 'result') updateResultView();
     }
+
+    setInterval(() => {
+      let changed = false;
+      const nowMins = getCurrentLogicalMinutes();
+      const isNotifyOk = ('Notification' in window) && (Notification.permission === 'granted');
+      
+      tasks.forEach(task => {
+        if (!task.completed && task.deadline) {
+          if (nowMins > getLogicalMinutes(task.deadline)) {
+            task.completed = true;
+            task.failed = true;
+            changed = true;
+          }
+        }
+        
+        if (task.remind && !task.completed && !task.failed) {
+          const taskMins = getLogicalMinutes(task.time);
+          if (nowMins === taskMins && !task.notified) {
+            if (isNotifyOk) {
+              new Notification("👑徳政 任務リマインド", { body: `「${task.name}」のお時間です。` });
+            }
+            task.notified = true;
+            changed = true;
+          }
+        }
+      });
+
+      if (changed) saveAndRefresh();
+    }, 60000);
 
     updateCalendarHeader();
     updateUI();
