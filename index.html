@@ -649,7 +649,38 @@
     let currentEditingTemplate = 'weekday';
     let specialPeriod = JSON.parse(localStorage.getItem('tokusei_special_period')) || { start: '', end: '' };
 
-    let tasks = JSON.parse(localStorage.getItem('tokusei_tasks')) || templates.weekday;
+    function getTodayTemplateType(dateStr) {
+      if (specialPeriod.start && specialPeriod.end) {
+        if (dateStr >= specialPeriod.start && dateStr <= specialPeriod.end) {
+          return 'special';
+        }
+      }
+      const [y, m, d_num] = dateStr.split('-');
+      const targetDate = new Date(y, m - 1, d_num);
+      const day = targetDate.getDay();
+      if (day === 0 || day === 6) return 'weekend';
+      return 'weekday';
+    }
+
+    let savedDate = localStorage.getItem('tokusei_tasks_date');
+    let currentTemplateType = localStorage.getItem('tokusei_current_template_type');
+    let tasks = JSON.parse(localStorage.getItem('tokusei_tasks'));
+
+    // 日付が変わった、または初回起動時にテンプレートを適用してリセットする
+    if (savedDate !== todayStr || !tasks) {
+      currentTemplateType = getTodayTemplateType(todayStr);
+      tasks = JSON.parse(JSON.stringify(templates[currentTemplateType]));
+      localStorage.setItem('tokusei_tasks_date', todayStr);
+      localStorage.setItem('tokusei_tasks', JSON.stringify(tasks));
+      localStorage.setItem('tokusei_current_template_type', currentTemplateType);
+    }
+    
+    // バックアップ対応：何らかの理由で currentTemplateType がない場合
+    if (!currentTemplateType) {
+        currentTemplateType = getTodayTemplateType(todayStr);
+        localStorage.setItem('tokusei_current_template_type', currentTemplateType);
+    }
+
     let transactions = JSON.parse(localStorage.getItem('tokusei_transactions')) || [];
     let ledgerEntries = JSON.parse(localStorage.getItem('tokusei_ledger')) || {};
     let pdcaNotes = JSON.parse(localStorage.getItem('tokusei_pdca')) || {};
@@ -685,6 +716,10 @@
     }
 
     function updateUI() {
+      // 見出しのラベルを現在のテンプレートに合わせて自動更新
+      const labelMap = { 'weekday': '平日', 'weekend': '土日祝', 'special': '特殊' };
+      document.getElementById('current-template-label').innerText = labelMap[currentTemplateType] || '平日';
+
       sortTasksByTime(tasks);
 
       const taskListEl = document.getElementById('task-list');
@@ -939,8 +974,13 @@
         
         localStorage.setItem('tokusei_templates', JSON.stringify(templates));
         
-        tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-        saveAndRefresh();
+        // 今日のタスクと同じテンプレートを編集している場合だけ今日のタスクに反映
+        if (currentEditingTemplate === currentTemplateType) {
+            tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+            saveAndRefresh();
+        } else {
+            updateUI(); // 表示のみ更新
+        }
       }
     }
 
@@ -966,8 +1006,11 @@
       document.getElementById('new-task-toku').value = '';
 
       renderSettingsTaskList();
-      tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-      saveAndRefresh();
+      
+      if (currentEditingTemplate === currentTemplateType) {
+          tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+          saveAndRefresh();
+      }
       showToast('リストに任務を追加しました');
     }
 
@@ -976,8 +1019,11 @@
       templates[currentEditingTemplate] = templates[currentEditingTemplate].filter(t => t.id !== id);
       localStorage.setItem('tokusei_templates', JSON.stringify(templates));
       renderSettingsTaskList();
-      tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-      saveAndRefresh();
+      
+      if (currentEditingTemplate === currentTemplateType) {
+          tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
+          saveAndRefresh();
+      }
       showToast('任務を削除しました');
     }
 
@@ -1625,6 +1671,13 @@
     }
 
     setInterval(() => {
+      // 日付またぎの検知と自動リロード
+      const nowStr = formatDate(getLogicalDate());
+      if (nowStr !== localStorage.getItem('tokusei_tasks_date')) {
+         location.reload();
+         return;
+      }
+      
       let changed = false;
       const nowMins = getCurrentLogicalMinutes();
       const isNotifyOk = ('Notification' in window) && (Notification.permission === 'granted');
