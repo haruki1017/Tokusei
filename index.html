@@ -88,7 +88,8 @@
     .cal-cell { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; min-height: 72px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .cal-cell.today { border-color: var(--rank-f); }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); display: flex; align-items: flex-end; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    /* モーダル表示時のレイヤーを最前面(2000)に設定し、メニューバーより上に表示 */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); display: flex; align-items: flex-end; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-content { background: #1c1c1e; border-radius: 20px 20px 0 0; padding: 20px 20px calc(12px + env(safe-area-inset-bottom)) 20px; width: 100%; max-height: 85vh; overflow-y: auto; }
     .modal-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; text-align: center; }
@@ -103,7 +104,7 @@
     .tab-item.active { color: var(--rank-f); }
     .tab-icon { font-size: 24px; }
     .page { display: none; } .page.active { display: block; }
-    .toast { position: fixed; bottom: calc(75px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(40,40,40,0.9); color: #fff; padding: 12px 20px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 500; }
+    .toast { position: fixed; bottom: calc(75px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(40,40,40,0.9); color: #fff; padding: 12px 20px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 2500; }
     .toast.show { opacity: 1; }
 
     /* 勉強管理用グラフCSS */
@@ -352,7 +353,7 @@
     </div>
   </div>
 
-  <!-- モーダル: 勉強計画作成 -->
+  <!-- モーダル: 勉強計画作成 (大幅リニューアル) -->
   <div class="modal-overlay" id="study-plan-modal" onclick="closeModal('study-plan-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-title">📚 勉強計画の作成</div>
@@ -362,9 +363,28 @@
         <div style="flex:1"><label class="input-label">開始日</label><input type="date" class="input-field" id="study-plan-start" style="padding:8px; font-size:13px;"></div>
         <div style="flex:1"><label class="input-label">終了日</label><input type="date" class="input-field" id="study-plan-end" style="padding:8px; font-size:13px;"></div>
       </div>
-      <div style="font-size:14px; font-weight:bold; margin-bottom:8px; margin-top:16px;">勉強内容（日々の目標）</div>
-      <div id="study-plan-items" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
-      <button class="btn-modal submit-blue" style="padding:10px; width:100%; margin-bottom:16px; font-size:14px;" onclick="addStudyPlanItemUI()">＋ 内容を追加</button>
+      
+      <div style="font-size:14px; font-weight:bold; margin-bottom:8px; margin-top:16px; color:var(--text-sub);">曜日ごとの計画内容</div>
+      
+      <!-- 曜日タブ -->
+      <div class="segment-control" style="margin: 0 0 8px 0; padding: 2px;">
+        <button class="segment-btn active" id="sp-tab-Mon" onclick="switchStudyPlanDay('Mon')">月</button>
+        <button class="segment-btn" id="sp-tab-Tue" onclick="switchStudyPlanDay('Tue')">火</button>
+        <button class="segment-btn" id="sp-tab-Wed" onclick="switchStudyPlanDay('Wed')">水</button>
+        <button class="segment-btn" id="sp-tab-Thu" onclick="switchStudyPlanDay('Thu')">木</button>
+        <button class="segment-btn" id="sp-tab-Fri" onclick="switchStudyPlanDay('Fri')">金</button>
+        <button class="segment-btn" id="sp-tab-Sat" onclick="switchStudyPlanDay('Sat')">土</button>
+        <button class="segment-btn" id="sp-tab-Sun" onclick="switchStudyPlanDay('Sun')">日</button>
+        <button class="segment-btn" id="sp-tab-Special" onclick="switchStudyPlanDay('Special')">特</button>
+      </div>
+
+      <div style="text-align:right; margin-bottom:8px;">
+        <button style="background:none; border:1px solid var(--card-border); color:var(--text-sub); padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="copyStudyPlanDay()">📋 月曜の内容を火〜金にコピー</button>
+      </div>
+
+      <div id="study-plan-items" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px; min-height: 80px;"></div>
+      <button class="btn-modal submit-blue" style="padding:10px; width:100%; margin-bottom:16px; font-size:14px;" onclick="addStudyPlanItemUI()">＋ この曜日に内容を追加</button>
+      
       <div class="modal-buttons"><button class="btn-modal cancel" onclick="closeModal('study-plan-modal')">キャンセル</button><button class="btn-modal submit-green" onclick="saveStudyPlan()">計画を保存</button></div>
     </div>
   </div>
@@ -461,7 +481,7 @@
 
     // --- UI汎用 ---
     function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); document.getElementById('tab-bar').classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function toggleDrawer(open) { document.getElementById('drawer-overlay').classList[open?'add':'remove']('active'); }
     function calculateRank(rate) { return rate >= 90 ? 'S' : rate >= 70 ? 'A' : rate >= 50 ? 'B' : 'F'; }
     function requestNotify() { if ('Notification' in window) Notification.requestPermission().then(p => showToast(p==='granted'?'通知許可済':'ブロック済')); }
@@ -538,7 +558,7 @@
     function saveAndRefresh() { localStorage.setItem('tokusei_tasks', JSON.stringify(tasks)); updateUI(); }
 
     // --- 設定モーダル ---
-    function openSettings() { document.getElementById('setting-template-select').value=currentEditingTemplate; changeEditingTemplate(currentEditingTemplate); document.getElementById('settings-modal').classList.add('active'); document.getElementById('tab-bar').classList.add('hidden'); }
+    function openSettings() { document.getElementById('setting-template-select').value=currentEditingTemplate; changeEditingTemplate(currentEditingTemplate); document.getElementById('settings-modal').classList.add('active'); }
     function changeEditingTemplate(val) { currentEditingTemplate=val; document.getElementById('special-period-container').style.display=val==='special'?'block':'none'; if(val==='special')renderSpecialPeriod(); renderSettingsTaskList(); }
     function renderSpecialPeriod() { const ds=document.getElementById('current-special-period'); if(specialPeriod.start){ ds.innerText=`${specialPeriod.start}〜${specialPeriod.end}`; document.getElementById('special-start').value=specialPeriod.start; document.getElementById('special-end').value=specialPeriod.end;}else{ ds.innerText='未設定'; document.getElementById('special-start').value=''; document.getElementById('special-end').value='';} }
     function saveSpecialPeriod() { const s=document.getElementById('special-start').value, e=document.getElementById('special-end').value; if(s&&e){ specialPeriod={start:s,end:e}; localStorage.setItem('tokusei_special_period', JSON.stringify(specialPeriod)); renderSpecialPeriod(); showToast('設定完了'); } }
@@ -588,78 +608,207 @@
       else if(currentStudyTab==='record') renderStudyRecordView();
     }
 
-    // --- 計画 ---
+    // --- 計画作成 (曜日別タブ型) ---
+    let tempStudyPlanItems = { Mon:[], Tue:[], Wed:[], Thu:[], Fri:[], Sat:[], Sun:[], Special:[] };
+    let tempStudyPlanActiveDay = 'Mon';
+
     function openStudyPlanModal(editId=null) {
       document.getElementById('study-plan-id').value = editId || '';
       document.getElementById('study-plan-name').value = '';
       document.getElementById('study-plan-start').value = todayStr;
       document.getElementById('study-plan-end').value = '';
-      document.getElementById('study-plan-items').innerHTML = '';
-      if(!editId) addStudyPlanItemUI();
+      
+      if(editId) {
+        const plan = studyPlans.find(p => p.id === editId);
+        if(plan) {
+            document.getElementById('study-plan-name').value = plan.name;
+            document.getElementById('study-plan-start').value = plan.startDate;
+            document.getElementById('study-plan-end').value = plan.endDate === '2099-12-31' ? '' : plan.endDate;
+            if(plan.itemsByDay) {
+                tempStudyPlanItems = JSON.parse(JSON.stringify(plan.itemsByDay));
+            } else {
+                tempStudyPlanItems = { Mon:[], Tue:[], Wed:[], Thu:[], Fri:[], Sat:[], Sun:[], Special:[] };
+                (plan.items || []).forEach(i => {
+                    const ni = { subject: i.subject, content: i.content, minutes: i.minutes };
+                    if(i.dayType === 'all') { ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => tempStudyPlanItems[d].push({...ni})); }
+                    else if(i.dayType === 'weekday') { ['Mon','Tue','Wed','Thu','Fri'].forEach(d => tempStudyPlanItems[d].push({...ni})); }
+                    else if(i.dayType === 'weekend') { ['Sat','Sun'].forEach(d => tempStudyPlanItems[d].push({...ni})); }
+                    else if(i.dayType === 'special') { tempStudyPlanItems['Special'].push({...ni}); }
+                });
+            }
+        }
+      } else {
+        tempStudyPlanItems = { Mon:[], Tue:[], Wed:[], Thu:[], Fri:[], Sat:[], Sun:[], Special:[] };
+        tempStudyPlanItems['Mon'].push({ subject:'', content:'', minutes:'' }); // 初期1枠
+      }
+      
+      tempStudyPlanActiveDay = 'Mon';
+      updateStudyPlanDayTabs();
+      renderStudyPlanModalItems();
+      
       document.getElementById('study-plan-modal').classList.add('active');
-      document.getElementById('tab-bar').classList.add('hidden');
     }
-    
-    function addStudyPlanItemUI(subj='', cont='', min='', day='all') {
-      const id = Date.now() + Math.random();
-      const div = document.createElement('div');
-      div.className = 'settings-task-item'; div.style.flexWrap = 'wrap'; div.style.gap = '6px';
-      div.innerHTML = `
-        <input type="text" placeholder="科目" value="${subj}" class="input-field st-subj" style="padding:8px; width:45%;">
-        <input type="text" placeholder="内容" value="${cont}" class="input-field st-cont" style="padding:8px; width:45%;">
-        <div style="display:flex; gap:6px; width:100%; align-items:center;">
-          <input type="number" placeholder="分" value="${min}" class="input-field st-min" style="padding:8px; width:60px;">分
-          <select class="input-field st-day" style="padding:8px; flex:1;">
-            <option value="all" ${day==='all'?'selected':''}>毎日</option><option value="weekday" ${day==='weekday'?'selected':''}>平日のみ</option>
-            <option value="weekend" ${day==='weekend'?'selected':''}>土日のみ</option><option value="special" ${day==='special'?'selected':''}>特殊のみ</option>
-          </select>
-          <button style="background:var(--rank-a); border:none; color:#fff; border-radius:6px; width:36px; height:36px;" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-      `;
-      document.getElementById('study-plan-items').appendChild(div);
+
+    function switchStudyPlanDay(day) {
+      saveTempStudyPlanItems();
+      tempStudyPlanActiveDay = day;
+      updateStudyPlanDayTabs();
+      renderStudyPlanModalItems();
+    }
+
+    function updateStudyPlanDayTabs() {
+      const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Special'];
+      days.forEach(d => {
+        document.getElementById(`sp-tab-${d}`).classList.remove('active');
+      });
+      document.getElementById(`sp-tab-${tempStudyPlanActiveDay}`).classList.add('active');
+    }
+
+    function saveTempStudyPlanItems() {
+      const items = [];
+      document.querySelectorAll('#study-plan-items .settings-task-item').forEach(el => {
+        const s = el.querySelector('.st-subj').value;
+        const c = el.querySelector('.st-cont').value;
+        const m = parseInt(el.querySelector('.st-min').value, 10);
+        items.push({ subject:s, content:c, minutes:isNaN(m)?'':m });
+      });
+      tempStudyPlanItems[tempStudyPlanActiveDay] = items;
+    }
+
+    function renderStudyPlanModalItems() {
+      const container = document.getElementById('study-plan-items');
+      container.innerHTML = '';
+      const items = tempStudyPlanItems[tempStudyPlanActiveDay] || [];
+      if(items.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:16px;">この曜日の計画はありません</div>';
+      } else {
+        items.forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.className = 'settings-task-item'; div.style.flexWrap = 'wrap'; div.style.gap = '6px'; div.style.padding = '12px';
+          div.innerHTML = `
+            <div style="display:flex; gap:6px; width:100%;">
+                <input type="text" placeholder="科目 (例: 法規)" value="${item.subject}" class="input-field st-subj" style="padding:8px; flex:1;">
+                <input type="text" placeholder="内容 (例: 過去問)" value="${item.content}" class="input-field st-cont" style="padding:8px; flex:1;">
+            </div>
+            <div style="display:flex; gap:6px; width:100%; align-items:center;">
+              <input type="number" placeholder="勉強時間" value="${item.minutes}" class="input-field st-min" style="padding:8px; flex:1;">分
+              <button style="background:var(--card-border); border:1px solid var(--rank-a); color:var(--rank-a); border-radius:8px; width:44px; height:40px; font-size:20px; cursor:pointer;" onclick="removeStudyPlanItemUI(${idx})">×</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+    }
+
+    function addStudyPlanItemUI() {
+      saveTempStudyPlanItems();
+      tempStudyPlanItems[tempStudyPlanActiveDay].push({ subject:'', content:'', minutes:'' });
+      renderStudyPlanModalItems();
+    }
+
+    function removeStudyPlanItemUI(idx) {
+      saveTempStudyPlanItems();
+      tempStudyPlanItems[tempStudyPlanActiveDay].splice(idx, 1);
+      renderStudyPlanModalItems();
+    }
+
+    function copyStudyPlanDay() {
+        saveTempStudyPlanItems();
+        const src = tempStudyPlanItems['Mon'];
+        if(src.length === 0) return showToast('月曜日の計画が空です');
+        if(!confirm('月曜日の計画を火〜金にコピーしますか？\n(現在の火〜金の内容は上書きされます)')) return;
+        
+        ['Tue','Wed','Thu','Fri'].forEach(d => {
+            tempStudyPlanItems[d] = JSON.parse(JSON.stringify(src));
+        });
+        showToast('月曜の計画を平日にコピーしました');
     }
 
     function saveStudyPlan() {
-      const name = document.getElementById('study-plan-name').value;
+      saveTempStudyPlanItems(); 
+      const name = document.getElementById('study-plan-name').value.trim();
       const start = document.getElementById('study-plan-start').value;
       const end = document.getElementById('study-plan-end').value;
       if(!name || !start) return showToast('計画名と開始日は必須です');
       
-      const items = [];
-      document.querySelectorAll('#study-plan-items .settings-task-item').forEach(el => {
-        const s = el.querySelector('.st-subj').value, c = el.querySelector('.st-cont').value, m = parseInt(el.querySelector('.st-min').value), d = el.querySelector('.st-day').value;
-        if(s && c && m) items.push({ subject:s, content:c, minutes:m, dayType:d });
+      let hasItem = false;
+      let cleanItems = {};
+      Object.keys(tempStudyPlanItems).forEach(d => {
+        cleanItems[d] = tempStudyPlanItems[d].filter(i => i.subject && i.content && i.minutes !== '');
+        if(cleanItems[d].length > 0) hasItem = true;
       });
-      if(items.length===0) return showToast('内容を1つ以上入力してね');
 
-      studyPlans.push({ id: Date.now(), name, startDate: start, endDate: end || '2099-12-31', items });
+      if(!hasItem) return showToast('内容を1つ以上入力してください');
+
+      const idVal = document.getElementById('study-plan-id').value;
+      if (idVal) {
+        const plan = studyPlans.find(p => p.id == idVal);
+        if(plan) {
+            plan.name = name; plan.startDate = start; plan.endDate = end || '2099-12-31';
+            plan.itemsByDay = cleanItems;
+        }
+      } else {
+        studyPlans.push({ 
+            id: Date.now(), name, startDate: start, endDate: end || '2099-12-31', itemsByDay: cleanItems 
+        });
+      }
+      
       localStorage.setItem('tokusei_study_plans', JSON.stringify(studyPlans));
-      closeModal('study-plan-modal'); renderStudyView(); showToast('計画を保存したよ');
+      closeModal('study-plan-modal'); 
+      renderStudyView(); 
+      showToast('計画を保存しました');
     }
 
     function renderStudyPlans() {
       const list = document.getElementById('study-plan-list'); list.innerHTML = '';
       studyPlans.forEach(p => {
         const div = document.createElement('div'); div.className = 'task-item'; div.style.flexDirection = 'column'; div.style.alignItems = 'flex-start'; div.style.gap = '8px';
-        let itemsHtml = p.items.map(i => `<div style="font-size:12px; color:var(--text-sub);">・${i.subject}: ${i.content} (${i.minutes}分) [${i.dayType}]</div>`).join('');
-        div.innerHTML = `<div style="display:flex; justify-content:space-between; width:100%;"><strong style="color:var(--rank-s);">${p.name}</strong><span style="font-size:11px;color:var(--text-sub);">${p.startDate}〜</span></div>${itemsHtml}
-        <button style="align-self:flex-end; background:var(--card-border); color:#fff; border:none; padding:4px 12px; border-radius:6px; font-size:12px;" onclick="delStudyPlan(${p.id})">削除</button>`;
+        
+        let summary = '';
+        if(p.itemsByDay) {
+            const totalWeekMins = Object.keys(p.itemsByDay).filter(k=>k!=='Special').reduce((sum, k) => sum + p.itemsByDay[k].reduce((s, i)=>s+parseInt(i.minutes||0,10), 0), 0);
+            summary = `<div style="font-size:12px; color:var(--text-sub);">一週間の目標: ${Math.floor(totalWeekMins/60)}時間${totalWeekMins%60}分</div>`;
+        }
+        
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <strong style="color:var(--rank-s); font-size:16px;">${p.name}</strong>
+            <span style="font-size:11px;color:var(--text-sub);">${p.startDate}〜</span>
+          </div>
+          ${summary}
+          <div style="display:flex; justify-content:flex-end; width:100%; gap:8px; margin-top:4px;">
+            <button style="background:#2c2c2e; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;" onclick="openStudyPlanModal(${p.id})">✎ 編集</button>
+            <button style="background:var(--card-border); color:var(--text-sub); border:none; padding:8px 16px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;" onclick="delStudyPlan(${p.id})">削除</button>
+          </div>
+        `;
         list.appendChild(div);
       });
+      if(studyPlans.length === 0) list.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:20px;">作成された計画はありません</div>';
     }
     function delStudyPlan(id) { if(confirm('計画を削除する？')) { studyPlans = studyPlans.filter(p=>p.id!==id); localStorage.setItem('tokusei_study_plans', JSON.stringify(studyPlans)); renderStudyPlans(); } }
 
     // --- 記録 ---
     function getTodayTargetItems() {
       let targets = [];
-      const dayType = getTodayTemplateType(todayStr); // weekday, weekend, special
+      const dayTypeStr = getTodayTemplateType(todayStr);
+      const d = new Date(todayStr);
+      const dayIdx = d.getDay(); 
+      const dayMap = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      let targetDayKey = dayMap[dayIdx];
+      if(dayTypeStr === 'special') targetDayKey = 'Special';
+
       studyPlans.forEach(p => {
         if(p.startDate <= todayStr && todayStr <= p.endDate) {
-          p.items.forEach(i => {
-            if(i.dayType === 'all' || i.dayType === dayType || (i.dayType === 'weekend' && dayType === 'weekend')) {
-              targets.push({ planName: p.name, ...i });
-            }
-          });
+          if(p.itemsByDay) {
+            const dayItems = p.itemsByDay[targetDayKey] || [];
+            dayItems.forEach(i => targets.push({ planName: p.name, ...i }));
+          } else if(p.items) {
+             p.items.forEach(i => {
+                if(i.dayType === 'all' || i.dayType === dayTypeStr || (i.dayType === 'weekend' && dayTypeStr === 'weekend')) {
+                  targets.push({ planName: p.name, ...i });
+                }
+             });
+          }
         }
       });
       return targets;
@@ -706,7 +855,6 @@
       document.getElementById('study-rec-mins').value = min;
       document.getElementById('study-record-id').value = isPlan ? 'plan' : '';
       document.getElementById('study-record-modal').classList.add('active');
-      document.getElementById('tab-bar').classList.add('hidden');
     }
 
     function saveStudyRecord() {
@@ -776,10 +924,22 @@
     }
 
     function getDayTargetMins(dateStr) {
-      let t = 0; const dayType = getTodayTemplateType(dateStr);
+      let t = 0; 
+      const dayTypeStr = getTodayTemplateType(dateStr);
+      const d = new Date(dateStr);
+      const dayIdx = d.getDay();
+      const dayMap = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      let targetDayKey = dayMap[dayIdx];
+      if(dayTypeStr === 'special') targetDayKey = 'Special';
+
       studyPlans.forEach(p => {
         if(p.startDate <= dateStr && dateStr <= p.endDate) {
-          p.items.forEach(i => { if(i.dayType==='all' || i.dayType===dayType) t+=i.minutes; });
+          if(p.itemsByDay) {
+            const dayItems = p.itemsByDay[targetDayKey] || [];
+            dayItems.forEach(i => t += parseInt(i.minutes||0,10));
+          } else if(p.items) {
+            p.items.forEach(i => { if(i.dayType==='all' || i.dayType===dayTypeStr) t+=parseInt(i.minutes||0,10); });
+          }
         }
       });
       return t;
@@ -1060,7 +1220,7 @@
       const [y, m, d] = dateStr.split('-'); document.getElementById('day-detail-date').innerText = `${y}年${parseInt(m)}月${parseInt(d)}日`;
       document.getElementById('day-detail-rank-rate').innerText = `${rank} (${rate}%)`; document.getElementById('day-detail-rank-rate').className = `color-${rank}`;
       document.getElementById('day-detail-toku').innerText = `${toku}徳`;
-      renderLedgerList(); switchDetailMode('toku'); document.getElementById('day-detail-modal').classList.add('active'); document.getElementById('tab-bar').classList.add('hidden');
+      renderLedgerList(); switchDetailMode('toku'); document.getElementById('day-detail-modal').classList.add('active');
     }
 
     function renderLedgerList() {
@@ -1086,6 +1246,139 @@
       document.getElementById('btn-mode-ledger').classList[mode==='ledger'?'add':'remove']('active');
       document.getElementById('detail-mode-toku-content').style.display = mode==='toku'?'block':'none';
       document.getElementById('detail-mode-ledger-content').style.display = mode==='ledger'?'block':'none';
+    }
+
+    function updateWalletUI(taskEarnedToku = 0) {
+      let specialSum = 0, spendSum = 0;
+      transactions.forEach(t => {
+        if (t.type === 'special') specialSum += t.amount;
+        if (t.type === 'spend') spendSum += t.amount;
+      });
+
+      let taskSum = 0;
+      Object.keys(dailyRecords).forEach(k => {
+        taskSum += dailyRecords[k].earned;
+      });
+
+      const cumEarned = taskSum + specialSum;
+      const cumSpent = spendSum;
+      const currentBalance = cumEarned - cumSpent;
+
+      document.getElementById('wallet-current-toku').innerText = `${currentBalance}徳`;
+      document.getElementById('wallet-cum-earned').innerText = cumEarned;
+      document.getElementById('wallet-cum-spent').innerText = cumSpent;
+
+      const historyEl = document.getElementById('history-list');
+      historyEl.innerHTML = '';
+      let allItems = [...transactions];
+      
+      if (taskEarnedToku > 0) {
+        allItems.unshift({ title: '本日の任務達成', date: todayStr, type: 'task', amount: taskEarnedToku, memo: '日々の積み重ね' });
+      }
+
+      if (allItems.length === 0) {
+        historyEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding:20px;">履歴はありません</div>';
+        return;
+      }
+
+      allItems.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'history-item';
+        const isPlus = item.type !== 'spend';
+        const valClass = isPlus ? 'plus' : 'minus';
+        const valPrefix = isPlus ? '+' : '-';
+        itemEl.innerHTML = `
+          <div>
+            <div class="history-title">${item.title || item.reason}</div>
+            <div class="history-meta">${item.date} ${item.memo ? '• ' + item.memo : ''}</div>
+          </div>
+          <div class="history-val ${valClass}">${valPrefix}${item.amount}徳</div>
+        `;
+
+        if (item.type === 'special' || item.type === 'spend') {
+          let pressTimer;
+          let isLongPress = false;
+
+          const startPress = (e) => {
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+              isLongPress = true;
+              if (navigator.vibrate) navigator.vibrate(50);
+              
+              if (confirm(`履歴「${item.reason}」を削除しますか？`)) {
+                transactions = transactions.filter(t => t.id !== item.id);
+                localStorage.setItem('tokusei_transactions', JSON.stringify(transactions));
+                updateUI(); 
+                showToast('履歴を削除しました');
+              }
+            }, 1200);
+          };
+
+          const cancelPress = () => clearTimeout(pressTimer);
+
+          itemEl.addEventListener('touchstart', startPress, {passive: true});
+          itemEl.addEventListener('touchmove', cancelPress, {passive: true});
+          itemEl.addEventListener('touchend', cancelPress);
+          itemEl.addEventListener('mousedown', startPress);
+          itemEl.addEventListener('mouseup', cancelPress);
+          itemEl.addEventListener('mouseleave', cancelPress);
+
+          itemEl.addEventListener('click', (e) => {
+            if (isLongPress) {
+              e.preventDefault();
+            } else {
+              showToast('削除するには長押ししてください');
+            }
+          });
+        }
+
+        historyEl.appendChild(itemEl);
+      });
+    }
+
+    function openModal(mode) {
+      document.getElementById('modal-amount').value = '';
+      document.getElementById('modal-reason').value = '';
+      document.getElementById('modal-memo').value = '';
+
+      const t = document.getElementById('modal-title');
+      const btn = document.getElementById('modal-submit-btn');
+
+      if (mode === 'special') {
+        t.innerText = '特別徳の追加';
+        document.getElementById('modal-amount-label').innerText = '獲得する徳';
+        document.getElementById('modal-reason-label').innerText = '理由 (必須)';
+        btn.innerText = '追加する';
+        btn.className = 'btn-modal submit-green';
+      } else {
+        t.innerText = '徳を使う';
+        document.getElementById('modal-amount-label').innerText = '使用する徳';
+        document.getElementById('modal-reason-label').innerText = '用途 (必須)';
+        btn.innerText = 'この内容で使う';
+        btn.className = 'btn-modal submit-red';
+      }
+
+      document.getElementById('modal-overlay').classList.add('active');
+    }
+
+    function submitModal() {
+      const amount = parseInt(document.getElementById('modal-amount').value, 10);
+      const reason = document.getElementById('modal-reason').value.trim();
+      const memo = document.getElementById('modal-memo').value.trim();
+
+      if (isNaN(amount) || amount <= 0 || !reason) {
+        showToast('入力内容を確認してください');
+        return;
+      }
+
+      const isSpend = document.getElementById('modal-title').innerText === '徳を使う';
+      const type = isSpend ? 'spend' : 'special';
+
+      transactions.unshift({ id: Date.now(), type: type, amount, reason, memo, date: todayStr });
+      localStorage.setItem('tokusei_transactions', JSON.stringify(transactions));
+      closeModal('modal-overlay');
+      saveAndRefresh();
+      showToast('記録しました');
     }
 
     // 自動リロードと通知ループ
