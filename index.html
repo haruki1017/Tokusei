@@ -8,305 +8,126 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0d0d0d">
-  <!-- iPhoneに縦画面固定(portrait)を要求する設定を埋め込み -->
   <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%E5%BE%B3%E6%94%BF%22%2C%22short_name%22%3A%22%E5%BE%B3%E6%94%BF%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%7D'>
 
   <style>
     :root {
-      --bg-color: #0d0d0d;
-      --card-bg: #1a1a1e;
-      --card-border: #2a2a30;
-      --text-main: #ffffff;
-      --text-sub: #8e8e93;
-      
-      --rank-s: #ffd700; /* 金 */
-      --rank-a: #0a84ff; /* 青 */
-      --rank-b: #30d158; /* 緑 */
-      --rank-f: #ff453a; /* 赤 */
+      --bg-color: #0d0d0d; --card-bg: #1a1a1e; --card-border: #2a2a30;
+      --text-main: #ffffff; --text-sub: #8e8e93;
+      --rank-s: #ffd700; --rank-a: #0a84ff; --rank-b: #30d158; --rank-f: #ff453a;
     }
-
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-
-    body {
-      background-color: #050505;
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-
-    .iphone-frame {
-      width: 100%;
-      max-width: 414px;
-      height: 100vh;
-      max-height: 920px;
-      background-color: var(--bg-color);
-      position: relative;
-      overflow-y: auto;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
-      border-radius: 0px;
-      padding-bottom: calc(90px + env(safe-area-inset-bottom));
-    }
-
-    @media (min-width: 480px) {
-      .iphone-frame {
-        border-radius: 40px;
-        border: 8px solid #2c2c2e;
-        height: 884px;
-      }
-    }
-
-    .header {
-      padding: calc(8px + env(safe-area-inset-top)) 16px 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background-color: var(--bg-color);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .menu-btn {
-      background: none; border: none; color: var(--text-main);
-      font-size: 26px; cursor: pointer; padding: 8px; min-width: 44px; min-height: 44px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
+    body { background-color: #050505; color: var(--text-main); font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .iphone-frame { width: 100%; max-width: 414px; height: 100vh; max-height: 920px; background-color: var(--bg-color); position: relative; overflow-y: auto; padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+    @media (min-width: 480px) { .iphone-frame { border-radius: 40px; border: 8px solid #2c2c2e; height: 884px; } }
+    
+    .header { padding: calc(8px + env(safe-area-inset-top)) 16px 12px 16px; display: flex; align-items: center; gap: 12px; background-color: var(--bg-color); position: sticky; top: 0; z-index: 10; }
+    .menu-btn { background: none; border: none; color: var(--text-main); font-size: 26px; cursor: pointer; padding: 8px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     .app-title { font-size: 22px; font-weight: bold; color: var(--rank-s); }
 
-    .drawer-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-    }
+    .drawer-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .drawer-overlay.active { opacity: 1; pointer-events: auto; }
-
-    .drawer-content {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: 260px; background: #161618; border-right: 1px solid var(--card-border);
-      z-index: 401; transform: translateX(-100%); transition: transform 0.3s ease;
-      padding: calc(16px + env(safe-area-inset-top)) 16px 24px 16px; display: flex; flex-direction: column; gap: 16px;
-    }
+    .drawer-content { position: fixed; top: 0; left: 0; bottom: 0; width: 260px; background: #161618; border-right: 1px solid var(--card-border); z-index: 401; transform: translateX(-100%); transition: transform 0.3s ease; padding: calc(16px + env(safe-area-inset-top)) 16px 24px 16px; display: flex; flex-direction: column; gap: 16px; overflow-y:auto; }
     .drawer-overlay.active .drawer-content { transform: translateX(0); }
-
     .drawer-title { font-size: 20px; font-weight: bold; color: var(--rank-s); margin-bottom: 12px; }
-    .drawer-item {
-      padding: 14px; border-radius: 10px; background: var(--card-bg);
-      font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 10px;
-      min-height: 44px;
-    }
+    .drawer-item { padding: 14px; border-radius: 10px; background: var(--card-bg); font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
 
-    .color-S { color: var(--rank-s) !important; }
-    .color-A { color: var(--rank-a) !important; }
-    .color-B { color: var(--rank-b) !important; }
-    .color-F { color: var(--rank-f) !important; }
+    .color-S { color: var(--rank-s) !important; } .color-A { color: var(--rank-a) !important; } .color-B { color: var(--rank-b) !important; } .color-F { color: var(--rank-f) !important; }
 
-    .status-card {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 16px; margin: 0 16px 12px 16px; padding: 12px 16px; text-align: center;
-    }
+    .status-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 12px 16px; padding: 12px 16px; text-align: center; }
     .status-grid { display: flex; justify-content: space-around; align-items: center; margin-bottom: 8px; }
     .status-item { display: flex; flex-direction: column; }
     .status-value { font-size: 30px; font-weight: bold; }
     .status-label { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
-
     .progress-bar-bg { background-color: #2c2c2e; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
-    .progress-bar-fill {
-      height: 100%; width: 0%; transition: width 0.3s ease;
-      background: linear-gradient(90deg, var(--rank-f), var(--rank-s));
-    }
+    .progress-bar-fill { height: 100%; width: 0%; transition: width 0.3s ease; background: linear-gradient(90deg, var(--rank-f), var(--rank-s)); }
     .next-rank-text { font-size: 13px; color: var(--text-sub); margin-top: 6px; }
 
-    .section-title {
-      font-size: 16px; font-weight: bold; color: var(--text-sub); margin: 0 12px 8px 12px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-
+    .section-title { font-size: 16px; font-weight: bold; color: var(--text-sub); margin: 0 12px 8px 12px; display: flex; justify-content: space-between; align-items: center; }
     .task-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
-    .task-item {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 14px 16px; display: flex; align-items: center;
-      justify-content: space-between; transition: all 0.25s ease; cursor: pointer;
-      min-height: 56px;
-    }
+    .task-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 56px; }
     .task-item.completed { background: #121215; border-color: #1f1f24; opacity: 0.5; }
     .task-left { display: flex; align-items: center; gap: 8px; }
-    .checkbox {
-      width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--text-sub);
-      display: flex; align-items: center; justify-content: center; font-weight: bold;
-    }
-    
+    .checkbox { width: 28px; height: 28px; border-radius: 6px; border: 2px solid var(--text-sub); display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .task-time { font-size: 14px; font-weight: bold; color: var(--rank-s); line-height: 1.1; }
     .task-name { font-size: 17px; font-weight: 500; margin-top: 0; line-height: 1.2; }
     .task-toku { font-size: 17px; font-weight: bold; color: var(--rank-s); text-align: right; }
 
     .segment-control { display: flex; background: #1c1c1e; border-radius: 10px; padding: 2px; margin: 0 16px 16px 16px; }
-    .segment-btn {
-      flex: 1; padding: 10px 0; text-align: center; font-size: 14px; color: var(--text-sub);
-      border-radius: 8px; border: none; background: none; cursor: pointer; min-height: 44px;
-    }
+    .segment-btn { flex: 1; padding: 10px 0; text-align: center; font-size: 14px; color: var(--text-sub); border-radius: 8px; border: none; background: none; cursor: pointer; }
     .segment-btn.active { background: #2c2c2e; color: var(--text-main); font-weight: 600; }
 
     .result-nav-header { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: 16px; }
-    .result-arrow-btn {
-      background: #242428; border: 1px solid var(--card-border); color: var(--text-main);
-      width: 36px; height: 36px; border-radius: 8px; font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .date-header { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 0; }
+    .result-arrow-btn { background: #242428; border: 1px solid var(--card-border); color: var(--text-main); width: 36px; height: 36px; border-radius: 8px; font-size: 18px; cursor: pointer; }
+    .date-header { text-align: center; font-size: 18px; font-weight: bold; }
 
-    .main-summary-box {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; text-align: center;
-    }
+    .main-summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; text-align: center; }
     .main-summary-rank { font-size: 48px; font-weight: 900; }
     .main-summary-rate { font-size: 20px; font-weight: bold; margin-top: 2px; }
-
-    .result-toku-summary-box {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; margin: 0 16px 16px 16px; padding: 12px 4px;
-      display: flex; justify-content: space-around; text-align: center;
-    }
-
-    .result-daily-tasks-box {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; margin: 0 16px 16px 16px; padding: 16px; text-align: left;
-    }
-
+    .result-toku-summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; margin: 0 16px 16px 16px; padding: 12px 4px; display: flex; justify-content: space-around; text-align: center; }
+    .result-daily-tasks-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; margin: 0 16px 16px 16px; padding: 16px; text-align: left; }
     .sub-charts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px 16px 16px; }
-    .sub-chart-card {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 12px; padding: 10px 4px; text-align: center; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; min-height: 60px;
-    }
-    .sub-chart-card:active { transform: scale(0.95); }
+    .sub-chart-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 4px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
     .pdca-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; }
-    .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-s); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .pdca-input {
-      width: 100%; background: #242428; border: 1px solid var(--card-border);
-      border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 8px; outline: none; min-height: 44px;
-    }
+    .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-s); margin-bottom: 12px; }
+    .pdca-input { width: 100%; background: #242428; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 8px; outline: none; }
 
     .wallet-hero { text-align: center; padding: 10px 16px 20px 16px; }
-    .wallet-hero-label { font-size: 15px; color: var(--text-sub); }
     .wallet-hero-val { font-size: 52px; font-weight: bold; color: var(--rank-b); margin: 6px 0 16px 0; }
-    .wallet-sub-stats { display: flex; justify-content: center; gap: 30px; font-size: 15px; color: var(--text-sub); }
     .wallet-actions { display: flex; gap: 12px; padding: 0 16px 20px 16px; }
-    .btn-action {
-      flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 16px;
-      font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; min-height: 48px;
-    }
-    .btn-action.add { background: rgba(48, 209, 88, 0.15); color: var(--rank-b); border: 1px solid rgba(48, 209, 88, 0.3); }
-    .btn-action.spend { background: rgba(255, 69, 58, 0.15); color: var(--rank-a); border: 1px solid rgba(255, 69, 58, 0.3); }
-
+    .btn-action { flex: 1; padding: 14px; border-radius: 14px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; }
+    .btn-action.add { background: rgba(48,209,88,0.15); color: var(--rank-b); border: 1px solid rgba(48,209,88,0.3); }
+    .btn-action.spend { background: rgba(255,69,58,0.15); color: var(--rank-a); border: 1px solid rgba(255,69,58,0.3); }
     .history-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
-    .history-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;}
-    .history-title { font-size: 16px; font-weight: 500; }
-    .history-meta { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
-    .history-val { font-size: 18px; font-weight: bold; }
-    .history-val.plus { color: var(--rank-b); }
-    .history-val.minus { color: var(--rank-a); }
+    .history-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
 
-    .calendar-header-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 10px 8px 10px; font-size: 16px; font-weight: bold; }
-    .cal-monthly-summary {
-      background: var(--card-bg); border: 1px solid var(--card-border);
-      border-radius: 10px; margin: 0 10px 12px 10px; padding: 8px 12px;
-      display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-sub);
-    }
-    .cal-monthly-summary strong { color: var(--text-main); }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 10px; text-align: center; }
-    .cal-day-label { font-size: 13px; color: var(--text-sub); padding-bottom: 6px; }
-
-    .cal-cell {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; min-height: 72px;
-      padding: 4px 2px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      cursor: pointer; position: relative;
-    }
+    .cal-cell { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; min-height: 72px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .cal-cell.today { border-color: var(--rank-f); }
-    .cal-num { font-size: 12px; font-weight: 500; color: var(--text-sub); }
-    .cal-rank-big { font-size: 18px; font-weight: 900; margin: 1px 0; }
-    .cal-toku-gray { font-size: 10px; color: #666; }
-    .cal-ledger-blue { font-size: 10px; color: var(--rank-f); font-weight: bold; }
-    .cal-ledger-red { font-size: 10px; color: var(--rank-a); font-weight: bold; }
 
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75);
-      display: flex; align-items: flex-end; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); display: flex; align-items: flex-end; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-content {
-      background: #1c1c1e; border-top-left-radius: 20px; border-top-right-radius: 20px;
-      padding: 20px 20px calc(12px + env(safe-area-inset-bottom)) 20px; width: 100%; border-top: 1px solid var(--card-border);
-      max-height: 85vh; overflow-y: auto;
-    }
+    .modal-content { background: #1c1c1e; border-radius: 20px 20px 0 0; padding: 20px 20px calc(12px + env(safe-area-inset-bottom)) 20px; width: 100%; max-height: 85vh; overflow-y: auto; }
     .modal-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; text-align: center; }
-    .input-group { margin-bottom: 12px; }
-    .input-label { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: block; }
-    .input-field {
-      width: 100%; background: #2c2c2e; border: 1px solid var(--card-border);
-      border-radius: 10px; padding: 12px; color: #fff; font-size: 16px; outline: none; min-height: 44px;
-    }
-    .modal-buttons { display: flex; gap: 10px; margin-top: 16px; }
-    .btn-modal { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; min-height: 48px; }
+    .input-field { width: 100%; background: #2c2c2e; border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; color: #fff; font-size: 16px; outline: none; }
+    .btn-modal { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
     .btn-modal.cancel { background: #2c2c2e; color: var(--text-sub); }
     .btn-modal.submit-blue { background: var(--rank-f); color: #fff; }
     .btn-modal.submit-green { background: var(--rank-b); color: #000; }
-    .btn-modal.submit-red { background: var(--rank-a); color: #fff; }
     
-    .settings-task-item {
-      background: #242428; border: 1px solid var(--card-border); border-radius: 10px;
-      padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; min-height: 44px;
-    }
-
-    .tab-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: calc(56px + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: #121212; border-top: 1px solid var(--card-border);
-      display: flex; justify-content: space-around; align-items: center;
-      z-index: 300; max-width: 414px; margin: 0 auto; transition: transform 0.3s ease;
-      box-sizing: border-box;
-    }
-    .tab-bar.hidden { transform: translateY(100%); }
-    .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); font-size: 11px; cursor: pointer; width: 25%; justify-content: center; height: 100%; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #121212; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; z-index: 300; max-width: 414px; margin: 0 auto; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 11px; cursor: pointer; width: 20%; justify-content: center; height: 100%; }
     .tab-item.active { color: var(--rank-f); }
     .tab-icon { font-size: 24px; }
-
-    .page { display: none; }
-    .page.active { display: block; }
-    .toast {
-      position: fixed; bottom: calc(75px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
-      background: rgba(40, 40, 40, 0.9); color: #fff; padding: 12px 20px;
-      border-radius: 20px; font-size: 14px; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 500;
-    }
+    .page { display: none; } .page.active { display: block; }
+    .toast { position: fixed; bottom: calc(75px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: rgba(40,40,40,0.9); color: #fff; padding: 12px 20px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 500; }
     .toast.show { opacity: 1; }
+
+    /* 勉強管理用グラフCSS */
+    .bar-chart-container { display: flex; align-items: flex-end; justify-content: space-between; height: 180px; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); position: relative; margin-top:10px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; margin: 0 2px; position:relative; }
+    .bar-segment-wrapper { width: 100%; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+    .bar-segment { width: 100%; transition: height 0.3s; }
+    .bar-label { font-size: 10px; position: absolute; bottom: -20px; color: var(--text-sub); width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   </style>
 </head>
 <body>
 
 <div class="iphone-frame">
-
-  <!-- ヘッダー -->
   <div class="header">
     <button class="menu-btn" onclick="toggleDrawer(true)">☰</button>
     <div class="app-title">👑 徳政</div>
   </div>
 
-  <!-- サイドメニュー (Drawer) -->
   <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)">
     <div class="drawer-content" onclick="event.stopPropagation()">
       <div class="drawer-title">👑 徳政 メニュー</div>
       <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.0');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.1.1');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -314,34 +135,39 @@
   <div id="page-today" class="page active">
     <div class="status-card">
       <div class="status-grid">
-        <div class="status-item">
-          <div class="status-value" id="rank-display">S</div>
-          <div class="status-label">ランク</div>
-        </div>
-        <div class="status-item">
-          <div class="status-value" id="rate-display">0%</div>
-          <div class="status-label">達成率</div>
-        </div>
-        <div class="status-item">
-          <div class="status-value color-S" id="toku-display">0徳</div>
-          <div class="status-label">獲得徳</div>
-        </div>
+        <div class="status-item"><div class="status-value" id="rank-display">S</div><div class="status-label">ランク</div></div>
+        <div class="status-item"><div class="status-value" id="rate-display">0%</div><div class="status-label">達成率</div></div>
+        <div class="status-item"><div class="status-value color-S" id="toku-display">0徳</div><div class="status-label">獲得徳</div></div>
       </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progress-fill"></div>
-      </div>
-      <div class="next-rank-text" id="next-rank-text">あと 50% で Bランク</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <div class="next-rank-text" id="next-rank-text"></div>
     </div>
-
-    <div class="section-title">
-      <span>今日の任務 (<span id="current-template-label">平日</span>)</span>
-      <span id="total-possible-toku">合計 0徳</span>
-    </div>
-
+    <div class="section-title"><span>今日の任務 (<span id="current-template-label">平日</span>)</span><span id="total-possible-toku">合計 0徳</span></div>
     <div class="task-list" id="task-list"></div>
   </div>
 
-  <!-- 【結果】画面 -->
+  <!-- 【勉強】画面 (記録と計画のみ) -->
+  <div id="page-study" class="page">
+    <div class="segment-control">
+      <button class="segment-btn active" id="study-seg-record" onclick="switchStudyTab('record')">記録</button>
+      <button class="segment-btn" id="study-seg-plan" onclick="switchStudyTab('plan')">計画</button>
+    </div>
+
+    <div id="study-view-record">
+      <div class="section-title">今日の計画</div>
+      <div id="study-today-plan-list" class="task-list"></div>
+      <div class="section-title" style="margin-top:20px;">今日の記録済</div>
+      <div id="study-today-record-list" class="task-list"></div>
+      <button class="btn-action add" style="margin: 16px;" onclick="openStudyRecordModal()">＋ 自由に追加記録する</button>
+    </div>
+
+    <div id="study-view-plan" style="display:none; padding:0 16px;">
+      <button class="btn-action add" style="margin-bottom: 16px;" onclick="openStudyPlanModal()">＋ 新しい計画を作成</button>
+      <div id="study-plan-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- 【結果】画面 (任務結果 ＋ 勉強結果を統合) -->
   <div id="page-result" class="page">
     <div class="segment-control">
       <button class="segment-btn active" id="seg-day" onclick="switchResultPeriod('day')">日</button>
@@ -349,40 +175,66 @@
       <button class="segment-btn" id="seg-month" onclick="switchResultPeriod('month')">月</button>
       <button class="segment-btn" id="seg-year" onclick="switchResultPeriod('year')">年</button>
     </div>
-
     <div class="result-nav-header">
       <button class="result-arrow-btn" onclick="shiftResultTarget(-1)">‹</button>
-      <div class="date-header" id="result-date-display">2026年7月22日 (水)</div>
+      <div class="date-header" id="result-date-display"></div>
       <button class="result-arrow-btn" onclick="shiftResultTarget(1)">›</button>
     </div>
-
+    
+    <!-- 任務サマリー -->
     <div class="main-summary-box">
+      <div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">任務の達成度</div>
       <div class="main-summary-rank" id="res-main-rank">S</div>
       <div class="main-summary-rate" id="res-main-rate">達成率 0%</div>
     </div>
-
     <div class="result-toku-summary-box">
       <div><div style="color:var(--text-sub); font-size:13px;">獲得徳</div><div id="res-toku-earned" style="font-weight:bold; color:var(--rank-s); font-size:22px; margin-top:4px;">0</div></div>
       <div><div style="color:var(--text-sub); font-size:13px;">消費徳</div><div id="res-toku-spent" style="font-weight:bold; color:var(--rank-a); font-size:22px; margin-top:4px;">0</div></div>
       <div><div style="color:var(--text-sub); font-size:13px;">特別徳</div><div id="res-toku-special" style="font-weight:bold; color:var(--rank-b); font-size:22px; margin-top:4px;">0</div></div>
       <div><div style="color:var(--text-sub); font-size:13px;">合計徳</div><div id="res-toku-total" style="font-weight:bold; font-size:22px; margin-top:4px;">0</div></div>
     </div>
-
     <div id="res-daily-tasks-container" class="result-daily-tasks-box" style="display:none;">
-      <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">達成した任務</div>
-      <div id="res-tasks-achieved" style="font-size:14px; margin-bottom:12px; color:var(--text-main);"></div>
-      <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">未達成の任務</div>
-      <div id="res-tasks-unachieved" style="font-size:14px; color:var(--text-main);"></div>
+      <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">達成した任務</div><div id="res-tasks-achieved" style="font-size:14px; margin-bottom:12px;"></div>
+      <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">未達成の任務</div><div id="res-tasks-unachieved" style="font-size:14px;"></div>
     </div>
-
     <div class="sub-charts-grid" id="sub-charts-grid"></div>
 
+    <!-- 勉強サマリー (統合) -->
+    <div class="section-title" style="margin-top:24px;">勉強の記録</div>
+    <div class="status-card" style="margin-bottom:16px; padding:16px;">
+      <div style="display:flex; justify-content:space-around; align-items:center;">
+        <div style="width:130px; height:130px; position:relative;">
+           <svg viewBox="0 0 36 36" width="100%" height="100%">
+             <path stroke="#2c2c2e" stroke-width="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+             <path id="res-study-chart-fill" stroke="var(--rank-s)" stroke-width="4" stroke-dasharray="0, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+             <text x="18" y="15" text-anchor="middle" font-size="6" fill="var(--text-main)" font-weight="bold" id="res-study-chart-rate">0%</text>
+             <text x="18" y="22" text-anchor="middle" font-size="4" fill="var(--rank-f)" font-weight="bold" id="res-study-chart-miss">未達 0%</text>
+           </svg>
+        </div>
+        <div style="text-align:left;">
+          <div style="font-size:12px; color:var(--text-sub);">目標時間</div>
+          <div style="font-size:18px; font-weight:bold; margin-bottom:8px;" id="res-study-target-time">0時間0分</div>
+          <div style="font-size:12px; color:var(--text-sub);">達成時間</div>
+          <div style="font-size:22px; font-weight:bold; color:var(--rank-s);" id="res-study-actual-time">0時間0分</div>
+        </div>
+      </div>
+    </div>
+    <div class="result-daily-tasks-box">
+      <div style="font-size:14px; font-weight:bold; margin-bottom:4px;">積み上げ学習時間</div>
+      <div class="bar-chart-container" id="res-study-bar-chart"></div>
+    </div>
+    <div class="result-daily-tasks-box">
+      <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">科目別 / 内容別 詳細</div>
+      <div id="res-study-detail-stats" style="font-size:13px; display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+
+    <!-- PDCAノート -->
     <div class="pdca-card">
       <div class="pdca-title">📝 振り返り・PDCAノート</div>
-      <input type="text" class="pdca-input" id="pdca-good" placeholder="⭕ できたこと (例: 6時に起きられた)">
-      <input type="text" class="pdca-input" id="pdca-bad" placeholder="❌ できなかったこと (例: 朝勉強パス)">
-      <input type="text" class="pdca-input" id="pdca-why" placeholder="❓ なぜ？/ 次の対策 (例: 夜ふかしした)">
-      <button class="btn-modal submit-blue" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 4px;" onclick="savePdcaNote()">保存</button>
+      <input type="text" class="pdca-input" id="pdca-good" placeholder="⭕ できたこと">
+      <input type="text" class="pdca-input" id="pdca-bad" placeholder="❌ できなかったこと">
+      <input type="text" class="pdca-input" id="pdca-why" placeholder="❓ なぜ？/ 次の対策">
+      <button class="btn-modal submit-blue" style="width: 100%; padding: 12px; margin-top: 4px;" onclick="savePdcaNote()">保存</button>
     </div>
   </div>
 
@@ -396,118 +248,75 @@
         <span>累計消費: <strong id="wallet-cum-spent">0</strong>徳</span>
       </div>
     </div>
-
     <div class="wallet-actions">
       <button class="btn-action add" onclick="openModal('special')">＋ 特別徳を追加</button>
       <button class="btn-action spend" onclick="openModal('spend')">− 徳を使う</button>
     </div>
-
-    <div class="section-title">
-      <span>最近の履歴</span>
-    </div>
-
+    <div class="section-title"><span>最近の履歴</span></div>
     <div class="history-list" id="history-list"></div>
   </div>
 
   <!-- 【カレンダー】画面 -->
   <div id="page-calendar" class="page">
     <div class="calendar-header-nav">
-      <button style="font-size:28px; background:none; border:none; color:var(--text-main); cursor:pointer; padding:8px 16px;" onclick="changeMonth(-1)">‹</button>
-      <input type="month" id="calendar-month-select" value="2026-07" style="background:transparent; border:none; color:var(--text-main); font-size:18px; font-weight:bold; outline:none; text-align:center;" onchange="selectMonth()">
-      <button style="font-size:28px; background:none; border:none; color:var(--text-main); cursor:pointer; padding:8px 16px;" onclick="changeMonth(1)">›</button>
+      <button style="font-size:28px; background:none; border:none; color:var(--text-main); cursor:pointer;" onclick="changeMonth(-1)">‹</button>
+      <input type="month" id="calendar-month-select" style="background:transparent; border:none; color:var(--text-main); font-size:18px; font-weight:bold; outline:none; text-align:center;" onchange="selectMonth()">
+      <button style="font-size:28px; background:none; border:none; color:var(--text-main); cursor:pointer;" onclick="changeMonth(1)">›</button>
     </div>
-
     <div class="cal-monthly-summary">
       <div>月収支: <strong id="cal-monthly-balance" style="color:var(--rank-b);">¥0</strong></div>
       <div>年間総合: <strong id="cal-yearly-balance" style="color:var(--rank-b);">¥0</strong></div>
     </div>
-
     <div class="cal-grid" id="cal-grid">
-      <div class="cal-day-label">日</div>
-      <div class="cal-day-label">月</div>
-      <div class="cal-day-label">火</div>
-      <div class="cal-day-label">水</div>
-      <div class="cal-day-label">木</div>
-      <div class="cal-day-label">金</div>
-      <div class="cal-day-label">土</div>
+      <div class="cal-day-label">日</div><div class="cal-day-label">月</div><div class="cal-day-label">火</div><div class="cal-day-label">水</div><div class="cal-day-label">木</div><div class="cal-day-label">金</div><div class="cal-day-label">土</div>
     </div>
   </div>
 
-  <!-- モーダル: 設定画面 -->
+  <!-- モーダル: 任務設定 -->
   <div class="modal-overlay" id="settings-modal" onclick="closeModal('settings-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-      
       <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
-        <span>⚙️ 任務・テンプレート設定</span>
-        <button onclick="requestNotify()" style="background:var(--rank-f); border:none; color:#fff; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">🔔通知を許可</button>
+        <span>⚙️ 任務設定</span>
+        <button onclick="requestNotify()" style="background:var(--rank-f); border:none; color:#fff; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:bold;">🔔通知許可</button>
       </div>
-
       <div class="input-group">
-        <label class="input-label">編集・適用するテンプレート</label>
         <select id="setting-template-select" class="input-field" onchange="changeEditingTemplate(this.value)">
           <option value="weekday">平日テンプレート</option>
           <option value="weekend">土日祝テンプレート</option>
-          <option value="special">特殊テンプレート（お盆・年末年始・旅行）</option>
+          <option value="special">特殊テンプレート</option>
         </select>
       </div>
-
-      <div id="special-period-container" style="display:none; background:#242428; border:1px solid var(--card-border); border-radius:10px; padding:12px; margin-bottom:16px;">
-        <div style="font-size:12px; font-weight:bold; color:var(--rank-s); margin-bottom:8px;">🗓️ 特殊テンプレート期間指定</div>
-        <div id="current-special-period" style="font-size:13px; color:var(--text-main); margin-bottom:8px;">現在設定なし</div>
-        <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-          <input type="date" id="special-start" class="input-field" style="padding:8px; font-size:14px; min-height:36px;">
-          <span style="font-size:13px;">〜</span>
-          <input type="date" id="special-end" class="input-field" style="padding:8px; font-size:14px; min-height:36px;">
+      <div id="special-period-container" style="display:none; background:#242428; border-radius:10px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:12px; font-weight:bold; color:var(--rank-s); margin-bottom:8px;">🗓️ 特殊期間設定</div>
+        <div id="current-special-period" style="font-size:13px; margin-bottom:8px;"></div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input type="date" id="special-start" class="input-field" style="padding:8px; font-size:14px;"><span style="color:#fff;align-self:center;">〜</span><input type="date" id="special-end" class="input-field" style="padding:8px; font-size:14px;">
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-modal submit-blue" style="padding:10px; font-size:14px; min-height:36px;" onclick="saveSpecialPeriod();">設定・変更</button>
-          <button class="btn-modal submit-red" style="padding:10px; font-size:14px; min-height:36px;" onclick="clearSpecialPeriod();">削除</button>
-        </div>
+        <div style="display:flex; gap:8px;"><button class="btn-modal submit-blue" style="padding:10px;" onclick="saveSpecialPeriod();">設定</button><button class="btn-modal submit-red" style="padding:10px;" onclick="clearSpecialPeriod();">削除</button></div>
       </div>
-
-      <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">登録中の任務一覧 (直接編集・保存されます)</div>
+      <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">登録中の任務</div>
       <div id="settings-task-list"></div>
-
-      <div style="background:#242428; border:1px solid var(--card-border); border-radius:10px; padding:12px; margin-top:12px;">
-        <div style="font-size:13px; font-weight:bold; color:var(--rank-b); margin-bottom:8px;">➕ 新しい任務を追加</div>
-        <input type="text" id="new-task-name" class="input-field" placeholder="任務名 (例: 読書)" style="margin-bottom:6px;">
+      <div style="background:#242428; border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="font-size:13px; font-weight:bold; color:var(--rank-b); margin-bottom:8px;">➕ 新規追加</div>
+        <input type="text" id="new-task-name" class="input-field" placeholder="任務名" style="margin-bottom:6px;">
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="time" id="new-task-time" class="input-field" style="padding:8px;" required>
           <input type="number" id="new-task-toku" class="input-field" placeholder="獲得徳" style="padding:8px;">
         </div>
-        <button class="btn-modal submit-green" onclick="addNewTaskSetting();">リストに追加</button>
+        <button class="btn-modal submit-green" onclick="addNewTaskSetting();">追加</button>
       </div>
-
-      <div class="modal-buttons" style="margin-top:24px;">
-        <button class="btn-modal cancel" onclick="closeModal('settings-modal')">完了（閉じる）</button>
-      </div>
+      <div class="modal-buttons" style="margin-top:24px;"><button class="btn-modal cancel" onclick="closeModal('settings-modal')">閉じる</button></div>
     </div>
   </div>
 
-  <!-- モーダル: 特別徳 / 徳消費 -->
+  <!-- モーダル: 徳 -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal('modal-overlay')">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-title" id="modal-title">特別徳の追加</div>
-      
-      <div class="input-group">
-        <label class="input-label" id="modal-amount-label">徳の量</label>
-        <input type="number" class="input-field" id="modal-amount" placeholder="例: 200">
-      </div>
-
-      <div class="input-group">
-        <label class="input-label" id="modal-reason-label">理由・用途</label>
-        <input type="text" class="input-field" id="modal-reason" placeholder="例: パチンコ我慢">
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">メモ (任意)</label>
-        <input type="text" class="input-field" id="modal-memo" placeholder="詳細を入力">
-      </div>
-
-      <div class="modal-buttons">
-        <button class="btn-modal cancel" onclick="closeModal('modal-overlay')">キャンセル</button>
-        <button class="btn-modal submit-green" id="modal-submit-btn" onclick="submitModal()">決定</button>
-      </div>
+      <div class="input-group"><label class="input-label" id="modal-amount-label">徳の量</label><input type="number" class="input-field" id="modal-amount" placeholder="例: 200"></div>
+      <div class="input-group"><label class="input-label" id="modal-reason-label">理由・用途</label><input type="text" class="input-field" id="modal-reason" placeholder="例: パチンコ我慢"></div>
+      <div class="input-group"><label class="input-label">メモ (任意)</label><input type="text" class="input-field" id="modal-memo" placeholder="詳細を入力"></div>
+      <div class="modal-buttons"><button class="btn-modal cancel" onclick="closeModal('modal-overlay')">キャンセル</button><button class="btn-modal submit-green" id="modal-submit-btn" onclick="submitModal()">決定</button></div>
     </div>
   </div>
 
@@ -518,515 +327,410 @@
         <button class="segment-btn active" id="btn-mode-toku" onclick="switchDetailMode('toku')">徳の記録</button>
         <button class="segment-btn" id="btn-mode-ledger" onclick="switchDetailMode('ledger')">出納帳</button>
       </div>
-
-      <div class="modal-title" id="day-detail-date">2026年7月22日</div>
-
+      <div class="modal-title" id="day-detail-date"></div>
       <div id="detail-mode-toku-content">
-        <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:16px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-            <span style="color:var(--text-sub); font-size:14px;">評価ランク / 達成率</span>
-            <span style="font-weight:bold; font-size:15px;" id="day-detail-rank-rate">A (78%)</span>
-          </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-sub); font-size:14px;">獲得徳</span>
-            <span style="font-weight:bold; font-size:15px;" id="day-detail-toku">125徳</span>
-          </div>
+        <div style="background:var(--card-bg); border-radius:12px; padding:16px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-sub); font-size:14px;">評価 / 達成率</span><span style="font-weight:bold; font-size:15px;" id="day-detail-rank-rate"></span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-sub); font-size:14px;">獲得徳</span><span style="font-weight:bold; font-size:15px;" id="day-detail-toku"></span></div>
         </div>
       </div>
-
       <div id="detail-mode-ledger-content" style="display: none;">
-        <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:12px; margin-bottom:16px;">
-          <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">本日の収支一覧</div>
-          <div id="ledger-history-list" style="font-size:14px; display:flex; flex-direction:column; gap:6px;"></div>
+        <div style="background:var(--card-bg); border-radius:12px; padding:12px; margin-bottom:16px;">
+          <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">本日の収支</div><div id="ledger-history-list" style="font-size:14px; display:flex; flex-direction:column; gap:6px;"></div>
         </div>
-
-        <div style="background:#242428; border:1px solid var(--card-border); border-radius:12px; padding:12px;">
+        <div style="background:#242428; border-radius:12px; padding:12px;">
           <div style="font-size:13px; font-weight:bold; color:var(--rank-s); margin-bottom:8px;">➕ 出入記録を追加</div>
           <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <select id="ledger-type" class="input-field" style="width:100px; padding:8px;">
-              <option value="out">支出 (-)</option>
-              <option value="in">収入 (+)</option>
-            </select>
+            <select id="ledger-type" class="input-field" style="width:100px; padding:8px;"><option value="out">支出 (-)</option><option value="in">収入 (+)</option></select>
             <input type="number" id="ledger-amount" class="input-field" placeholder="金額" style="padding:8px;">
           </div>
-          <input type="text" id="ledger-reason" class="input-field" placeholder="理由 (パン、おやつ等)" style="padding:8px; margin-bottom:8px;">
+          <input type="text" id="ledger-reason" class="input-field" placeholder="理由" style="padding:8px; margin-bottom:8px;">
           <button class="btn-modal submit-blue" style="width:100%; padding:12px;" onclick="addLedgerEntry(); closeModal('day-detail-modal');">入力完了</button>
         </div>
       </div>
+      <div class="modal-buttons"><button class="btn-modal cancel" onclick="closeModal('day-detail-modal')">閉じる</button></div>
+    </div>
+  </div>
 
-      <div class="modal-buttons">
-        <button class="btn-modal cancel" onclick="closeModal('day-detail-modal')">閉じる</button>
+  <!-- モーダル: 勉強計画作成 -->
+  <div class="modal-overlay" id="study-plan-modal" onclick="closeModal('study-plan-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-title">📚 勉強計画の作成</div>
+      <input type="hidden" id="study-plan-id">
+      <div class="input-group"><label class="input-label">計画名</label><input type="text" class="input-field" id="study-plan-name" placeholder="例: 一級建築士 一周目"></div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <div style="flex:1"><label class="input-label">開始日</label><input type="date" class="input-field" id="study-plan-start" style="padding:8px; font-size:13px;"></div>
+        <div style="flex:1"><label class="input-label">終了日</label><input type="date" class="input-field" id="study-plan-end" style="padding:8px; font-size:13px;"></div>
       </div>
+      <div style="font-size:14px; font-weight:bold; margin-bottom:8px; margin-top:16px;">勉強内容（日々の目標）</div>
+      <div id="study-plan-items" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+      <button class="btn-modal submit-blue" style="padding:10px; width:100%; margin-bottom:16px; font-size:14px;" onclick="addStudyPlanItemUI()">＋ 内容を追加</button>
+      <div class="modal-buttons"><button class="btn-modal cancel" onclick="closeModal('study-plan-modal')">キャンセル</button><button class="btn-modal submit-green" onclick="saveStudyPlan()">計画を保存</button></div>
+    </div>
+  </div>
+
+  <!-- モーダル: 勉強記録 -->
+  <div class="modal-overlay" id="study-record-modal" onclick="closeModal('study-record-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-title">✏️ 勉強の記録</div>
+      <input type="hidden" id="study-record-id">
+      <div class="input-group"><label class="input-label">科目</label><input type="text" class="input-field" id="study-rec-subject" placeholder="例: 法規"></div>
+      <div class="input-group"><label class="input-label">内容</label><input type="text" class="input-field" id="study-rec-content" placeholder="例: ワーク"></div>
+      <div class="input-group"><label class="input-label">勉強時間 (分)</label><input type="number" class="input-field" id="study-rec-mins" placeholder="例: 60"></div>
+      <div class="modal-buttons"><button class="btn-modal cancel" onclick="closeModal('study-record-modal')">キャンセル</button><button class="btn-modal submit-s" style="background:var(--rank-s); color:#000;" onclick="saveStudyRecord()">記録する</button></div>
     </div>
   </div>
 
   <div class="toast" id="toast">メッセージ</div>
 
-  <!-- 下部タブバー -->
+  <!-- タブバー -->
   <div class="tab-bar" id="tab-bar">
-    <div class="tab-item active" onclick="switchTab('today', this)">
-      <span class="tab-icon">✅</span>
-      <span>今日</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('result', this)">
-      <span class="tab-icon">📊</span>
-      <span>結果</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('toku', this)">
-      <span class="tab-icon">🔮</span>
-      <span>徳</span>
-    </div>
-    <div class="tab-item" onclick="switchTab('calendar', this)">
-      <span class="tab-icon">🗓️</span>
-      <span>カレンダー</span>
-    </div>
+    <div class="tab-item active" onclick="switchTab('today', this)"><span class="tab-icon">✅</span><span>今日</span></div>
+    <div class="tab-item" onclick="switchTab('study', this)"><span class="tab-icon">📚</span><span>勉強</span></div>
+    <div class="tab-item" onclick="switchTab('result', this)"><span class="tab-icon">📊</span><span>結果</span></div>
+    <div class="tab-item" onclick="switchTab('toku', this)"><span class="tab-icon">🔮</span><span>徳</span></div>
+    <div class="tab-item" onclick="switchTab('calendar', this)"><span class="tab-icon">🗓️</span><span>カレンダー</span></div>
   </div>
 
 </div>
 
   <script>
-    function getTimeValue(timeStr) {
-      if (!timeStr) return 99999;
-      const match = String(timeStr).match(/(\d{1,2}):(\d{2})/);
-      if (match) return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-      return 99999;
-    }
-
-    function getLogicalMinutes(timeStr) {
-      if (!timeStr) return 99999;
-      let m = getTimeValue(timeStr);
-      if (m < 4 * 60) m += 24 * 60;
-      return m;
-    }
-
-    function getCurrentLogicalMinutes() {
-      const now = new Date();
-      let m = now.getHours() * 60 + now.getMinutes();
-      if (m < 4 * 60) m += 24 * 60;
-      return m;
-    }
-
-    function sortTasksByTime(taskList) {
-      return taskList.sort((a, b) => getLogicalMinutes(a.time) - getLogicalMinutes(b.time));
-    }
-
-    const padTime = (t) => (t && t.length === 4 && t.includes(':')) ? "0" + t : (t || "");
-
-    function getLogicalDate(dateObj = new Date()) {
-      const d = new Date(dateObj);
-      if (d.getHours() < 4) d.setDate(d.getDate() - 1);
-      return d;
-    }
-    function formatDate(d) {
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-
+    // --- 共通ユーティリティ ---
+    function getTimeValue(timeStr) { if (!timeStr) return 99999; const m = String(timeStr).match(/(\d{1,2}):(\d{2})/); if (m) return parseInt(m[1],10)*60 + parseInt(m[2],10); return 99999; }
+    function getLogicalMinutes(timeStr) { let m = getTimeValue(timeStr); if (m < 4*60) m += 24*60; return m; }
+    function getCurrentLogicalMinutes() { const d = new Date(); let m = d.getHours()*60 + d.getMinutes(); if (m < 4*60) m += 24*60; return m; }
+    function getLogicalDate(dateObj = new Date()) { const d = new Date(dateObj); if (d.getHours() < 4) d.setDate(d.getDate() - 1); return d; }
+    function formatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    
     const todayDateObj = getLogicalDate();
     const todayStr = formatDate(todayDateObj);
 
+    // --- データ初期化 ---
     const defaultTemplates = {
-      weekday: [
-        { id: 1, name: '起床', time: '06:00', toku: 20, completed: false },
-        { id: 2, name: '身支度', time: '06:30', toku: 5, completed: false },
-        { id: 3, name: '朝勉強', time: '07:00', toku: 10, completed: false },
-        { id: 4, name: '仕事', time: '08:30', toku: 20, completed: false },
-        { id: 5, name: '筋トレ', time: '18:00', toku: 10, completed: false },
-        { id: 6, name: 'ギター', time: '20:00', toku: 10, completed: false },
-        { id: 7, name: '軍議', time: '22:00', toku: 5, completed: false }
-      ],
-      weekend: [
-        { id: 1, name: '起床', time: '07:00', toku: 15, completed: false },
-        { id: 2, name: 'ギター練習', time: '10:00', toku: 20, completed: false },
-        { id: 3, name: '部屋の掃除', time: '14:00', toku: 15, completed: false }
-      ],
-      special: [
-        { id: 1, name: '早起き', time: '07:00', toku: 20, completed: false },
-        { id: 2, name: '羽を伸ばす・楽しむ', time: '12:00', toku: 30, completed: false }
-      ]
+      weekday: [ { id: 1, name: '起床', time: '06:00', toku: 20, completed: false }, { id: 2, name: '仕事', time: '08:30', toku: 20, completed: false } ],
+      weekend: [ { id: 1, name: '起床', time: '07:00', toku: 15, completed: false } ],
+      special: [ { id: 1, name: '早起き', time: '07:00', toku: 20, completed: false } ]
     };
 
     let templates = JSON.parse(localStorage.getItem('tokusei_templates')) || defaultTemplates;
-    let currentEditingTemplate = 'weekday';
     let specialPeriod = JSON.parse(localStorage.getItem('tokusei_special_period')) || { start: '', end: '' };
 
     function getTodayTemplateType(dateStr) {
-      if (specialPeriod.start && specialPeriod.end) {
-        if (dateStr >= specialPeriod.start && dateStr <= specialPeriod.end) {
-          return 'special';
-        }
-      }
-      const [y, m, d_num] = dateStr.split('-');
-      const targetDate = new Date(y, m - 1, d_num);
-      const day = targetDate.getDay();
-      if (day === 0 || day === 6) return 'weekend';
-      return 'weekday';
+      if (specialPeriod.start && specialPeriod.end && dateStr >= specialPeriod.start && dateStr <= specialPeriod.end) return 'special';
+      const [y, m, d] = dateStr.split('-'); const day = new Date(y, m-1, d).getDay();
+      return (day === 0 || day === 6) ? 'weekend' : 'weekday';
     }
 
     let savedDate = localStorage.getItem('tokusei_tasks_date');
     let currentTemplateType = localStorage.getItem('tokusei_current_template_type');
     let tasks = JSON.parse(localStorage.getItem('tokusei_tasks'));
 
-    // 日付が変わった、または初回起動時にテンプレートを適用してリセットする
-    if (savedDate !== todayStr || !tasks) {
+    if (savedDate !== todayStr || !tasks || !currentTemplateType) {
       currentTemplateType = getTodayTemplateType(todayStr);
       tasks = JSON.parse(JSON.stringify(templates[currentTemplateType]));
       localStorage.setItem('tokusei_tasks_date', todayStr);
       localStorage.setItem('tokusei_tasks', JSON.stringify(tasks));
       localStorage.setItem('tokusei_current_template_type', currentTemplateType);
     }
-    
-    // バックアップ対応：何らかの理由で currentTemplateType がない場合
-    if (!currentTemplateType) {
-        currentTemplateType = getTodayTemplateType(todayStr);
-        localStorage.setItem('tokusei_current_template_type', currentTemplateType);
-    }
 
+    let currentEditingTemplate = currentTemplateType;
     let transactions = JSON.parse(localStorage.getItem('tokusei_transactions')) || [];
     let ledgerEntries = JSON.parse(localStorage.getItem('tokusei_ledger')) || {};
     let pdcaNotes = JSON.parse(localStorage.getItem('tokusei_pdca')) || {};
-    
     let dailyRecords = JSON.parse(localStorage.getItem('tokusei_daily_records')) || {};
 
     let currentSelectedDateStr = todayStr;
     let currentResultPeriod = 'day';
     let resultBaseDate = new Date(todayDateObj);
 
-    function requestNotify() {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(p => {
-          if (p === 'granted') showToast('通知が許可されました');
-          else showToast('通知がブロックされています');
-        });
-      } else {
-        showToast('このブラウザは通知に対応していません');
+    // --- 勉強機能データ ---
+    let studyPlans = JSON.parse(localStorage.getItem('tokusei_study_plans')) || [];
+    let studyRecords = JSON.parse(localStorage.getItem('tokusei_study_records')) || [];
+    const STUDY_COLORS = ['#0a84ff', '#ff453a', '#30d158', '#ffd700', '#bf5af2', '#ff9f0a', '#64d2ff', '#ff375f', '#5e5ce6'];
+
+    function getSubjectColor(subj) {
+      let map = JSON.parse(localStorage.getItem('tokusei_study_colors')) || {};
+      if (!map[subj]) {
+        const used = Object.values(map);
+        const avail = STUDY_COLORS.filter(c => !used.includes(c));
+        map[subj] = avail.length > 0 ? avail[0] : STUDY_COLORS[Math.floor(Math.random()*STUDY_COLORS.length)];
+        localStorage.setItem('tokusei_study_colors', JSON.stringify(map));
       }
+      return map[subj];
     }
 
-    function calculateRank(rate) {
-      if (rate >= 90) return 'S';
-      if (rate >= 70) return 'A';
-      if (rate >= 50) return 'B';
-      return 'F';
+    // --- UI汎用 ---
+    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); document.getElementById('tab-bar').classList.remove('hidden'); }
+    function toggleDrawer(open) { document.getElementById('drawer-overlay').classList[open?'add':'remove']('active'); }
+    function calculateRank(rate) { return rate >= 90 ? 'S' : rate >= 70 ? 'A' : rate >= 50 ? 'B' : 'F'; }
+    function requestNotify() { if ('Notification' in window) Notification.requestPermission().then(p => showToast(p==='granted'?'通知許可済':'ブロック済')); }
+
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      document.getElementById(`page-${tabName}`).classList.add('active');
+      el.classList.add('active');
+      if (tabName === 'result') updateResultView();
+      if (tabName === 'study') renderStudyView();
     }
 
-    function toggleDrawer(open) {
-      const drawer = document.getElementById('drawer-overlay');
-      if (open) drawer.classList.add('active');
-      else drawer.classList.remove('active');
-    }
-
+    // --- 今日の任務 ---
     function updateUI() {
-      // 見出しのラベルを現在のテンプレートに合わせて自動更新
-      const labelMap = { 'weekday': '平日', 'weekend': '土日祝', 'special': '特殊' };
-      document.getElementById('current-template-label').innerText = labelMap[currentTemplateType] || '平日';
+      const lbl = { 'weekday':'平日', 'weekend':'土日祝', 'special':'特殊' };
+      document.getElementById('current-template-label').innerText = lbl[currentTemplateType];
 
-      sortTasksByTime(tasks);
-
-      const taskListEl = document.getElementById('task-list');
-      taskListEl.innerHTML = '';
-
-      let completedCount = 0;
-      let earnedToku = 0;
-      let totalToku = 0;
-
-      tasks.forEach(task => {
-        totalToku += task.toku;
-        if (task.completed && !task.failed) {
-          completedCount++;
-          earnedToku += task.toku;
-          if (task.earnedBonus) earnedToku += task.earnedBonus;
-        }
+      const listEl = document.getElementById('task-list'); listEl.innerHTML = '';
+      let compCount = 0, eToku = 0, tToku = 0;
+      
+      tasks.sort((a,b)=>getLogicalMinutes(a.time)-getLogicalMinutes(b.time));
+      tasks.forEach(t => {
+        tToku += t.toku;
+        if (t.completed && !t.failed) { compCount++; eToku += t.toku + (t.earnedBonus||0); }
       });
 
-      const displayTasks = [...tasks].sort((a, b) => {
-        if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        return getLogicalMinutes(a.time) - getLogicalMinutes(b.time); 
-      });
-
-      displayTasks.forEach(task => {
-        const taskEl = document.createElement('div');
-        
-        let completedClass = task.completed ? 'completed' : '';
-        let checkboxHtml = '<div class="checkbox"></div>';
-        let displayToku = `${task.toku}徳`;
+      [...tasks].sort((a,b)=> (a.completed!==b.completed ? (a.completed?1:-1) : getLogicalMinutes(a.time)-getLogicalMinutes(b.time))).forEach(task => {
+        const el = document.createElement('div');
+        let cls = task.completed ? 'completed' : '';
+        let chk = '<div class="checkbox"></div>', tDisp = `${task.toku}徳`;
 
         if (task.completed) {
-          if (task.failed) {
-            completedClass += ' failed';
-            checkboxHtml = `<div class="checkbox" style="background-color: var(--rank-f); border-color: var(--rank-f); color: #fff;">×</div>`;
-            displayToku = `<span style="text-decoration: line-through; color: var(--text-sub);">${task.toku}徳</span>`;
-          } else {
-            checkboxHtml = `<div class="checkbox" style="background-color: var(--rank-s); border-color: var(--rank-s); color: #000;">✓</div>`;
-            if (task.earnedBonus) {
-              displayToku = `${task.toku}徳 <span style="color:var(--rank-s); font-size:13px; display:block; margin-top:2px;">+${task.earnedBonus}ボーナス</span>`;
-            }
-          }
+          if (task.failed) { cls += ' failed'; chk = `<div class="checkbox" style="background:var(--rank-f);border-color:var(--rank-f);color:#fff;">×</div>`; tDisp = `<span style="text-decoration:line-through;color:var(--text-sub);">${task.toku}徳</span>`; }
+          else { chk = `<div class="checkbox" style="background:var(--rank-s);border-color:var(--rank-s);color:#000;">✓</div>`; if(task.earnedBonus) tDisp=`${task.toku}徳 <span style="color:var(--rank-s);font-size:12px;display:block;">+${task.earnedBonus}ボ</span>`; }
         }
 
-        taskEl.className = `task-item ${completedClass}`;
-        taskEl.innerHTML = `
-          <div class="task-left">
-            ${checkboxHtml}
-            <div>
-              <div class="task-time">${task.time}</div>
-              <div class="task-name">${task.name}</div>
-            </div>
-          </div>
-          <div class="task-toku">${displayToku}</div>
-        `;
+        el.className = `task-item ${cls}`;
+        el.innerHTML = `<div class="task-left">${chk}<div><div class="task-time">${task.time}</div><div class="task-name">${task.name}</div></div></div><div class="task-toku">${tDisp}</div>`;
 
-        let pressTimer;
-        let isLongPress = false;
+        let timer, isLong = false;
+        const start = ()=> { isLong=false; timer=setTimeout(()=>{ isLong=true; navigator.vibrate?.(50); if(task.completed){ task.completed=false; task.failed=false; task.earnedBonus=0; saveAndRefresh(); }else{ if(confirm(`削除?`)){ tasks=tasks.filter(x=>x.id!==task.id); saveAndRefresh(); } } },1200); };
+        const cancel = ()=> clearTimeout(timer);
 
-        const startPress = (e) => {
-          isLongPress = false;
-          pressTimer = setTimeout(() => {
-            isLongPress = true;
-            if (navigator.vibrate) navigator.vibrate(50);
-            
-            if (task.completed) {
-              task.completed = false;
-              task.failed = false;
-              task.earnedBonus = 0;
-              saveAndRefresh();
-            } else {
-              if (confirm(`「${task.name}」を本日のみ削除しますか？`)) {
-                tasks = tasks.filter(t => t.id !== task.id);
-                saveAndRefresh();
-              }
-            }
-          }, 1200);
-        };
-
-        const cancelPress = () => clearTimeout(pressTimer);
-
-        taskEl.addEventListener('touchstart', startPress, {passive: true});
-        taskEl.addEventListener('touchmove', cancelPress, {passive: true});
-        taskEl.addEventListener('touchend', cancelPress);
-        taskEl.addEventListener('mousedown', startPress);
-        taskEl.addEventListener('mouseup', cancelPress);
-        taskEl.addEventListener('mouseleave', cancelPress);
-
-        taskEl.addEventListener('click', (e) => {
-          if (isLongPress || e.target.tagName.toLowerCase() === 'input') {
-            e.preventDefault();
-            return;
-          }
-          if (!task.completed) {
-            task.completed = true;
-            task.failed = false;
-            
-            const nowMins = getCurrentLogicalMinutes();
-            
-            if (task.bonusTime && task.bonusToku) {
-              if (nowMins <= getLogicalMinutes(task.bonusTime)) {
-                task.earnedBonus = parseInt(task.bonusToku, 10);
-                showToast(`早期達成ボーナス +${task.bonusToku}徳！`);
-              }
-            }
-
-            if (task.deadline && nowMins > getLogicalMinutes(task.deadline)) {
-              task.failed = true;
-              task.earnedBonus = 0;
-              showToast('期限切れのため失敗扱いです');
-            }
-
+        el.addEventListener('touchstart', start, {passive:true}); el.addEventListener('touchmove', cancel, {passive:true}); el.addEventListener('touchend', cancel);
+        el.addEventListener('mousedown', start); el.addEventListener('mouseup', cancel); el.addEventListener('mouseleave', cancel);
+        el.addEventListener('click', (e)=>{
+          if(isLong || e.target.tagName==='INPUT') return;
+          if(!task.completed) {
+            task.completed = true; task.failed = false;
+            const now = getCurrentLogicalMinutes();
+            if(task.useBonus && task.bonusTime && task.bonusToku && now<=getLogicalMinutes(task.bonusTime)) { task.earnedBonus=parseInt(task.bonusToku,10); showToast(`ボーナス+${task.bonusToku}徳！`); }
+            if(task.useDeadline && task.deadline && now>getLogicalMinutes(task.deadline)) { task.failed=true; task.earnedBonus=0; showToast('期限切れ'); }
             saveAndRefresh();
-          } else {
-            showToast('解除するには長押ししてください');
-          }
+          } else showToast('解除は長押し');
         });
-
-        taskListEl.appendChild(taskEl);
+        listEl.appendChild(el);
       });
 
-      const completionRate = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
-      const currentRank = calculateRank(completionRate);
-
-      dailyRecords[todayStr] = {
-        rate: completionRate,
-        rank: currentRank,
-        earned: earnedToku,
-        tasks: JSON.parse(JSON.stringify(tasks))
-      };
+      const rate = tasks.length ? Math.round((compCount/tasks.length)*100) : 0;
+      const rank = calculateRank(rate);
+      dailyRecords[todayStr] = { rate, rank, earned: eToku, tasks: JSON.parse(JSON.stringify(tasks)) };
       localStorage.setItem('tokusei_daily_records', JSON.stringify(dailyRecords));
 
-      const rankDisplay = document.getElementById('rank-display');
-      rankDisplay.innerText = currentRank;
-      rankDisplay.className = `status-value color-${currentRank}`;
+      document.getElementById('rank-display').innerText = rank;
+      document.getElementById('rank-display').className = `status-value color-${rank}`;
+      document.getElementById('rate-display').innerText = `${rate}%`;
+      document.getElementById('toku-display').innerText = `${eToku}徳`;
+      document.getElementById('total-possible-toku').innerText = `合計 ${tToku}徳`;
+      document.getElementById('progress-fill').style.width = `${rate}%`;
 
-      document.getElementById('rate-display').innerText = `${completionRate}%`;
-      document.getElementById('toku-display').innerText = `${earnedToku}徳`;
-      document.getElementById('total-possible-toku').innerText = `合計 ${totalToku}徳`;
+      updateResultView(); updateWalletUI(); renderCalendar();
+    }
+    function saveAndRefresh() { localStorage.setItem('tokusei_tasks', JSON.stringify(tasks)); updateUI(); }
 
-      const progressBar = document.getElementById('progress-fill');
-      progressBar.style.width = `${completionRate}%`;
+    // --- 設定モーダル ---
+    function openSettings() { document.getElementById('setting-template-select').value=currentEditingTemplate; changeEditingTemplate(currentEditingTemplate); document.getElementById('settings-modal').classList.add('active'); document.getElementById('tab-bar').classList.add('hidden'); }
+    function changeEditingTemplate(val) { currentEditingTemplate=val; document.getElementById('special-period-container').style.display=val==='special'?'block':'none'; if(val==='special')renderSpecialPeriod(); renderSettingsTaskList(); }
+    function renderSpecialPeriod() { const ds=document.getElementById('current-special-period'); if(specialPeriod.start){ ds.innerText=`${specialPeriod.start}〜${specialPeriod.end}`; document.getElementById('special-start').value=specialPeriod.start; document.getElementById('special-end').value=specialPeriod.end;}else{ ds.innerText='未設定'; document.getElementById('special-start').value=''; document.getElementById('special-end').value='';} }
+    function saveSpecialPeriod() { const s=document.getElementById('special-start').value, e=document.getElementById('special-end').value; if(s&&e){ specialPeriod={start:s,end:e}; localStorage.setItem('tokusei_special_period', JSON.stringify(specialPeriod)); renderSpecialPeriod(); showToast('設定完了'); } }
+    function clearSpecialPeriod() { specialPeriod={start:'',end:''}; localStorage.setItem('tokusei_special_period', JSON.stringify(specialPeriod)); renderSpecialPeriod(); showToast('削除完了'); }
+    
+    function renderSettingsTaskList() {
+      const arr = templates[currentEditingTemplate] || []; arr.sort((a,b)=>getLogicalMinutes(a.time)-getLogicalMinutes(b.time));
+      const el = document.getElementById('settings-task-list'); el.innerHTML='';
+      arr.forEach(t => {
+        const div = document.createElement('div'); div.className='settings-task-item'; div.style.flexDirection='column'; div.style.alignItems='stretch'; div.style.gap='8px';
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:6px;">
+            <input type="time" value="${t.time||''}" onchange="updateTask(${t.id},'time',this.value)" class="input-field" style="padding:6px;width:70px;min-height:36px;">
+            <input type="text" value="${t.name}" onchange="updateTask(${t.id},'name',this.value)" class="input-field" style="padding:6px;flex:1;min-height:36px;">
+            <input type="number" value="${t.toku}" onchange="updateTask(${t.id},'toku',this.value)" class="input-field" style="padding:6px;width:50px;min-height:36px;">
+            <button style="background:var(--rank-a);border:none;color:#fff;border-radius:6px;width:36px;" onclick="delTask(${t.id})">×</button>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:12px; background:#1c1c1e; padding:8px; border-radius:8px; color:var(--text-sub);">
+            <label style="display:flex;align-items:center;color:#fff;"><input type="checkbox" ${t.remind?'checked':''} onchange="updateTask(${t.id},'remind',this.checked)">🔔通知</label>
+            <label style="display:flex;align-items:center;color:#fff;"><input type="checkbox" ${t.useDeadline?'checked':''} onchange="updateTask(${t.id},'useDeadline',this.checked)">⏳期限</label>
+            <div style="display:${t.useDeadline?'flex':'none'};align-items:center;"><input type="time" value="${t.deadline||''}" onchange="updateTask(${t.id},'deadline',this.value)" class="input-field" style="padding:4px;width:65px;min-height:26px;font-size:12px;"></div>
+            <label style="display:flex;align-items:center;color:#fff;"><input type="checkbox" ${t.useBonus?'checked':''} onchange="updateTask(${t.id},'useBonus',this.checked)">🎁ボ</label>
+            <div style="display:${t.useBonus?'flex':'none'};align-items:center;gap:4px;"><input type="time" value="${t.bonusTime||''}" onchange="updateTask(${t.id},'bonusTime',this.value)" class="input-field" style="padding:4px;width:65px;min-height:26px;font-size:12px;"> 迄 <input type="number" value="${t.bonusToku||''}" onchange="updateTask(${t.id},'bonusToku',this.value)" class="input-field" style="padding:4px;width:40px;min-height:26px;font-size:12px;" placeholder="+徳"></div>
+          </div>
+        `;
+        el.appendChild(div);
+      });
+    }
+    function updateTask(id, k, v) { const t=templates[currentEditingTemplate].find(x=>x.id===id); if(t){ t[k]=(k==='toku'||k==='bonusToku')?(parseInt(v)||0):v; localStorage.setItem('tokusei_templates',JSON.stringify(templates)); if(currentEditingTemplate===currentTemplateType){ tasks=JSON.parse(JSON.stringify(templates[currentEditingTemplate])); saveAndRefresh(); }else{ renderSettingsTaskList(); } } }
+    function addNewTaskSetting() { const n=document.getElementById('new-task-name').value, tm=document.getElementById('new-task-time').value, tk=parseInt(document.getElementById('new-task-toku').value); if(n&&tm&&!isNaN(tk)){ templates[currentEditingTemplate].push({id:Date.now(),name:n,time:tm,toku:tk,completed:false,failed:false}); localStorage.setItem('tokusei_templates',JSON.stringify(templates)); document.getElementById('new-task-name').value=''; renderSettingsTaskList(); if(currentEditingTemplate===currentTemplateType){tasks=JSON.parse(JSON.stringify(templates[currentEditingTemplate]));saveAndRefresh();} } }
+    function delTask(id) { if(confirm('削除?')){ templates[currentEditingTemplate]=templates[currentEditingTemplate].filter(t=>t.id!==id); localStorage.setItem('tokusei_templates',JSON.stringify(templates)); renderSettingsTaskList(); if(currentEditingTemplate===currentTemplateType){tasks=JSON.parse(JSON.stringify(templates[currentEditingTemplate]));saveAndRefresh();} } }
 
-      const nextText = document.getElementById('next-rank-text');
-      if (completionRate < 50) nextText.innerText = `あと ${50 - completionRate}% で Bランク`;
-      else if (completionRate < 70) nextText.innerText = `あと ${70 - completionRate}% で Aランク`;
-      else if (completionRate < 90) nextText.innerText = `あと ${90 - completionRate}% で Sランク`;
-      else nextText.innerText = `最高ランク（S）達成！`;
+    // --- 勉強管理機能 ---
+    let currentStudyTab = 'record';
 
-      updateResultView();
-      updateWalletUI();
-      renderCalendar();
+    function switchStudyTab(tab) {
+      currentStudyTab = tab;
+      document.querySelectorAll('#page-study .segment-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`study-seg-${tab}`).classList.add('active');
+      document.getElementById('study-view-record').style.display = tab==='record' ? 'block':'none';
+      document.getElementById('study-view-plan').style.display = tab==='plan' ? 'block':'none';
+      renderStudyView();
     }
 
-    function openSettings() {
-      document.getElementById('setting-template-select').value = currentEditingTemplate;
-      changeEditingTemplate(currentEditingTemplate);
-      document.getElementById('settings-modal').classList.add('active');
+    function renderStudyView() {
+      if(currentStudyTab==='plan') renderStudyPlans();
+      else if(currentStudyTab==='record') renderStudyRecordView();
+    }
+
+    // --- 計画 ---
+    function openStudyPlanModal(editId=null) {
+      document.getElementById('study-plan-id').value = editId || '';
+      document.getElementById('study-plan-name').value = '';
+      document.getElementById('study-plan-start').value = todayStr;
+      document.getElementById('study-plan-end').value = '';
+      document.getElementById('study-plan-items').innerHTML = '';
+      if(!editId) addStudyPlanItemUI();
+      document.getElementById('study-plan-modal').classList.add('active');
+      document.getElementById('tab-bar').classList.add('hidden');
+    }
+    
+    function addStudyPlanItemUI(subj='', cont='', min='', day='all') {
+      const id = Date.now() + Math.random();
+      const div = document.createElement('div');
+      div.className = 'settings-task-item'; div.style.flexWrap = 'wrap'; div.style.gap = '6px';
+      div.innerHTML = `
+        <input type="text" placeholder="科目" value="${subj}" class="input-field st-subj" style="padding:8px; width:45%;">
+        <input type="text" placeholder="内容" value="${cont}" class="input-field st-cont" style="padding:8px; width:45%;">
+        <div style="display:flex; gap:6px; width:100%; align-items:center;">
+          <input type="number" placeholder="分" value="${min}" class="input-field st-min" style="padding:8px; width:60px;">分
+          <select class="input-field st-day" style="padding:8px; flex:1;">
+            <option value="all" ${day==='all'?'selected':''}>毎日</option><option value="weekday" ${day==='weekday'?'selected':''}>平日のみ</option>
+            <option value="weekend" ${day==='weekend'?'selected':''}>土日のみ</option><option value="special" ${day==='special'?'selected':''}>特殊のみ</option>
+          </select>
+          <button style="background:var(--rank-a); border:none; color:#fff; border-radius:6px; width:36px; height:36px;" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+      `;
+      document.getElementById('study-plan-items').appendChild(div);
+    }
+
+    function saveStudyPlan() {
+      const name = document.getElementById('study-plan-name').value;
+      const start = document.getElementById('study-plan-start').value;
+      const end = document.getElementById('study-plan-end').value;
+      if(!name || !start) return showToast('計画名と開始日は必須です');
+      
+      const items = [];
+      document.querySelectorAll('#study-plan-items .settings-task-item').forEach(el => {
+        const s = el.querySelector('.st-subj').value, c = el.querySelector('.st-cont').value, m = parseInt(el.querySelector('.st-min').value), d = el.querySelector('.st-day').value;
+        if(s && c && m) items.push({ subject:s, content:c, minutes:m, dayType:d });
+      });
+      if(items.length===0) return showToast('内容を1つ以上入力してね');
+
+      studyPlans.push({ id: Date.now(), name, startDate: start, endDate: end || '2099-12-31', items });
+      localStorage.setItem('tokusei_study_plans', JSON.stringify(studyPlans));
+      closeModal('study-plan-modal'); renderStudyView(); showToast('計画を保存したよ');
+    }
+
+    function renderStudyPlans() {
+      const list = document.getElementById('study-plan-list'); list.innerHTML = '';
+      studyPlans.forEach(p => {
+        const div = document.createElement('div'); div.className = 'task-item'; div.style.flexDirection = 'column'; div.style.alignItems = 'flex-start'; div.style.gap = '8px';
+        let itemsHtml = p.items.map(i => `<div style="font-size:12px; color:var(--text-sub);">・${i.subject}: ${i.content} (${i.minutes}分) [${i.dayType}]</div>`).join('');
+        div.innerHTML = `<div style="display:flex; justify-content:space-between; width:100%;"><strong style="color:var(--rank-s);">${p.name}</strong><span style="font-size:11px;color:var(--text-sub);">${p.startDate}〜</span></div>${itemsHtml}
+        <button style="align-self:flex-end; background:var(--card-border); color:#fff; border:none; padding:4px 12px; border-radius:6px; font-size:12px;" onclick="delStudyPlan(${p.id})">削除</button>`;
+        list.appendChild(div);
+      });
+    }
+    function delStudyPlan(id) { if(confirm('計画を削除する？')) { studyPlans = studyPlans.filter(p=>p.id!==id); localStorage.setItem('tokusei_study_plans', JSON.stringify(studyPlans)); renderStudyPlans(); } }
+
+    // --- 記録 ---
+    function getTodayTargetItems() {
+      let targets = [];
+      const dayType = getTodayTemplateType(todayStr); // weekday, weekend, special
+      studyPlans.forEach(p => {
+        if(p.startDate <= todayStr && todayStr <= p.endDate) {
+          p.items.forEach(i => {
+            if(i.dayType === 'all' || i.dayType === dayType || (i.dayType === 'weekend' && dayType === 'weekend')) {
+              targets.push({ planName: p.name, ...i });
+            }
+          });
+        }
+      });
+      return targets;
+    }
+
+    function renderStudyRecordView() {
+      const pList = document.getElementById('study-today-plan-list'); pList.innerHTML = '';
+      const rList = document.getElementById('study-today-record-list'); rList.innerHTML = '';
+      
+      const targets = getTodayTargetItems();
+      const todaysRecords = studyRecords.filter(r => r.date === todayStr);
+
+      targets.forEach(t => {
+        const isDone = todaysRecords.some(r => r.subject===t.subject && r.content===t.content && r.isPlanItem);
+        if(isDone) return; 
+        const el = document.createElement('div'); el.className = 'task-item';
+        el.innerHTML = `
+          <div><div style="font-size:11px; color:var(--text-sub);">${t.planName}</div><strong style="font-size:16px;">${t.subject} : ${t.content}</strong></div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-weight:bold; color:var(--rank-s);">${t.minutes}分</span>
+            <button style="background:var(--rank-b); border:none; color:#000; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:12px;" onclick="quickStudyRecord('${t.subject}','${t.content}',${t.minutes}, true)">✓ 完了</button>
+            <button style="background:#2c2c2e; border:none; color:#fff; padding:8px; border-radius:8px; font-size:12px;" onclick="openStudyRecordModal('${t.subject}','${t.content}',${t.minutes}, true)">✎ 変更</button>
+          </div>
+        `;
+        pList.appendChild(el);
+      });
+      if(pList.innerHTML==='') pList.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center;">今日の予定タスクはありません</div>';
+
+      todaysRecords.forEach(r => {
+        const el = document.createElement('div'); el.className = 'task-item completed';
+        el.innerHTML = `
+          <div><div style="font-size:14px; font-weight:bold;">${r.subject} : ${r.content}</div></div>
+          <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${r.minutes}分</span>
+          <button style="background:var(--rank-a); border:none; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;" onclick="delStudyRecord(${r.id})">取消</button></div>
+        `;
+        rList.appendChild(el);
+      });
+      if(rList.innerHTML==='') rList.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center;">まだ記録がありません</div>';
+    }
+
+    function openStudyRecordModal(subj='', cont='', min='', isPlan=false) {
+      document.getElementById('study-rec-subject').value = subj;
+      document.getElementById('study-rec-content').value = cont;
+      document.getElementById('study-rec-mins').value = min;
+      document.getElementById('study-record-id').value = isPlan ? 'plan' : '';
+      document.getElementById('study-record-modal').classList.add('active');
       document.getElementById('tab-bar').classList.add('hidden');
     }
 
-    function changeEditingTemplate(val) {
-      currentEditingTemplate = val;
-      const specialContainer = document.getElementById('special-period-container');
-      if (val === 'special') {
-        specialContainer.style.display = 'block';
-        renderSpecialPeriod();
-      } else {
-        specialContainer.style.display = 'none';
-      }
-      renderSettingsTaskList();
+    function saveStudyRecord() {
+      const s = document.getElementById('study-rec-subject').value;
+      const c = document.getElementById('study-rec-content').value;
+      const m = parseInt(document.getElementById('study-rec-mins').value, 10);
+      const isPlan = document.getElementById('study-record-id').value === 'plan';
+      if(s && c && m) { quickStudyRecord(s, c, m, isPlan); closeModal('study-record-modal'); }
+      else showToast('全て入力してね');
     }
 
-    function renderSpecialPeriod() {
-      const display = document.getElementById('current-special-period');
-      if (specialPeriod.start && specialPeriod.end) {
-        display.innerText = `設定中: ${specialPeriod.start} 〜 ${specialPeriod.end}`;
-        document.getElementById('special-start').value = specialPeriod.start;
-        document.getElementById('special-end').value = specialPeriod.end;
-      } else {
-        display.innerText = '現在設定なし';
-        document.getElementById('special-start').value = '';
-        document.getElementById('special-end').value = '';
-      }
+    function quickStudyRecord(subject, content, minutes, isPlanItem=false) {
+      studyRecords.push({ id: Date.now(), date: todayStr, subject, content, minutes, isPlanItem });
+      localStorage.setItem('tokusei_study_records', JSON.stringify(studyRecords));
+      renderStudyView(); showToast('勉強を記録したよ！');
     }
 
-    function saveSpecialPeriod() {
-      const start = document.getElementById('special-start').value;
-      const end = document.getElementById('special-end').value;
-      if (!start || !end) {
-        showToast('期間を正しく選択してください');
-        return;
-      }
-      specialPeriod = { start, end };
-      localStorage.setItem('tokusei_special_period', JSON.stringify(specialPeriod));
-      renderSpecialPeriod();
-      showToast('特殊期間を設定・変更しました');
+    function delStudyRecord(id) {
+      studyRecords = studyRecords.filter(r => r.id !== id);
+      localStorage.setItem('tokusei_study_records', JSON.stringify(studyRecords));
+      renderStudyView();
     }
 
-    function clearSpecialPeriod() {
-      specialPeriod = { start: '', end: '' };
-      localStorage.setItem('tokusei_special_period', JSON.stringify(specialPeriod));
-      renderSpecialPeriod();
-      showToast('特殊期間設定を削除しました');
-    }
-
-    function renderSettingsTaskList() {
-      const targetTasks = templates[currentEditingTemplate] || [];
-      sortTasksByTime(targetTasks);
-      
-      const listEl = document.getElementById('settings-task-list');
-      listEl.innerHTML = '';
-
-      targetTasks.forEach((t) => {
-        const item = document.createElement('div');
-        item.className = 'settings-task-item';
-        item.style.flexDirection = 'column';
-        item.style.alignItems = 'stretch';
-        item.style.gap = '8px';
-        
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:6px; align-items:center;">
-            <input type="time" value="${t.time || ''}" onchange="updateTaskSetting(${t.id}, 'time', this.value)" class="input-field" style="padding:6px; width:80px; min-height:36px; text-align:center;">
-            <input type="text" value="${t.name}" onchange="updateTaskSetting(${t.id}, 'name', this.value)" class="input-field" style="padding:6px; flex:1; min-height:36px;">
-            <input type="number" value="${t.toku}" onchange="updateTaskSetting(${t.id}, 'toku', this.value)" class="input-field" style="padding:6px; width:55px; min-height:36px; text-align:center;">
-            <button style="background:var(--rank-a); border:none; color:#fff; border-radius:6px; padding:0; width:36px; height:36px; font-size:16px; cursor:pointer;" onclick="deleteTaskSetting(${t.id})">×</button>
-          </div>
-          <div style="display:flex; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--text-sub); align-items:center; background:#1c1c1e; padding:8px; border-radius:8px;">
-            <label style="display:flex; align-items:center; gap:4px; color:var(--text-main);">
-              <input type="checkbox" ${t.remind ? 'checked' : ''} onchange="updateTaskSetting(${t.id}, 'remind', this.checked)" style="transform:scale(1.2);"> 🔔通知
-            </label>
-            <div style="display:flex; align-items:center; gap:4px;">
-              期限: <input type="time" value="${t.deadline || ''}" onchange="updateTaskSetting(${t.id}, 'deadline', this.value)" class="input-field" style="padding:4px; width:70px; min-height:28px; font-size:11px;">
-            </div>
-            <div style="display:flex; align-items:center; gap:4px;">
-              <span style="color:var(--rank-b);">ボ:</span> 
-              <input type="time" value="${t.bonusTime || ''}" onchange="updateTaskSetting(${t.id}, 'bonusTime', this.value)" class="input-field" style="padding:4px; width:70px; min-height:28px; font-size:11px;">
-              <span style="color:var(--text-sub);">迄</span>
-              <input type="number" value="${t.bonusToku || ''}" onchange="updateTaskSetting(${t.id}, 'bonusToku', this.value)" class="input-field" style="padding:4px; width:45px; min-height:28px; font-size:11px;" placeholder="+徳">
-            </div>
-          </div>
-        `;
-        listEl.appendChild(item);
-      });
-    }
-
-    function updateTaskSetting(id, key, value) {
-      const targetTasks = templates[currentEditingTemplate];
-      const task = targetTasks.find(t => t.id === id);
-      if (task) {
-        if (key === 'toku' || key === 'bonusToku') task[key] = value === '' ? 0 : parseInt(value, 10);
-        else task[key] = value;
-        
-        localStorage.setItem('tokusei_templates', JSON.stringify(templates));
-        
-        // 今日のタスクと同じテンプレートを編集している場合だけ今日のタスクに反映
-        if (currentEditingTemplate === currentTemplateType) {
-            tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-            saveAndRefresh();
-        } else {
-            updateUI(); // 表示のみ更新
-        }
-      }
-    }
-
-    function addNewTaskSetting() {
-      const name = document.getElementById('new-task-name').value.trim();
-      const time = document.getElementById('new-task-time').value;
-      const toku = parseInt(document.getElementById('new-task-toku').value, 10);
-
-      if (!name || !time || isNaN(toku)) {
-        showToast('項目を入力してください');
-        return;
-      }
-
-      templates[currentEditingTemplate].push({ 
-        id: Date.now(), name, time, toku, completed: false, failed: false, 
-        remind: false, deadline: '', bonusTime: '', bonusToku: 0 
-      });
-      
-      sortTasksByTime(templates[currentEditingTemplate]);
-      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
-
-      document.getElementById('new-task-name').value = '';
-      document.getElementById('new-task-toku').value = '';
-
-      renderSettingsTaskList();
-      
-      if (currentEditingTemplate === currentTemplateType) {
-          tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-          saveAndRefresh();
-      }
-      showToast('リストに任務を追加しました');
-    }
-
-    function deleteTaskSetting(id) {
-      if(!confirm('この任務を削除しますか？')) return;
-      templates[currentEditingTemplate] = templates[currentEditingTemplate].filter(t => t.id !== id);
-      localStorage.setItem('tokusei_templates', JSON.stringify(templates));
-      renderSettingsTaskList();
-      
-      if (currentEditingTemplate === currentTemplateType) {
-          tasks = JSON.parse(JSON.stringify(templates[currentEditingTemplate]));
-          saveAndRefresh();
-      }
-      showToast('任務を削除しました');
-    }
-
+    // --- 結果統合画面 ---
     function getWeekRange(date) {
       const d = new Date(date);
       const day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6 : 1);
@@ -1053,7 +757,7 @@
 
     function switchResultPeriod(period) {
       currentResultPeriod = period;
-      document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#page-result .segment-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(`seg-${period}`).classList.add('active');
       updateResultView();
     }
@@ -1071,18 +775,27 @@
       updateResultView();
     }
 
+    function getDayTargetMins(dateStr) {
+      let t = 0; const dayType = getTodayTemplateType(dateStr);
+      studyPlans.forEach(p => {
+        if(p.startDate <= dateStr && dateStr <= p.endDate) {
+          p.items.forEach(i => { if(i.dayType==='all' || i.dayType===dayType) t+=i.minutes; });
+        }
+      });
+      return t;
+    }
+
+    function formatTime(mins) { return `${Math.floor(mins/60)}時間${mins%60}分`; }
+
     function updateResultView() {
+      // --- 任務の集計 ---
       const grid = document.getElementById('sub-charts-grid');
       const dailyTasksContainer = document.getElementById('res-daily-tasks-container');
       const achievedEl = document.getElementById('res-tasks-achieved');
       const unachievedEl = document.getElementById('res-tasks-unachieved');
-      grid.innerHTML = '';
-      achievedEl.innerHTML = '';
-      unachievedEl.innerHTML = '';
+      grid.innerHTML = ''; achievedEl.innerHTML = ''; unachievedEl.innerHTML = '';
 
-      let mainRate = 0;
-      let mainRank = 'F';
-      let tEarned = 0, tSpent = 0, tSpecial = 0, tTotal = 0;
+      let mainRate = 0, mainRank = 'F', tEarned = 0, tSpent = 0, tSpecial = 0, tTotal = 0;
       let targetDateStrs = [];
 
       if (currentResultPeriod === 'day') {
@@ -1098,9 +811,7 @@
       }
 
       if (currentResultPeriod === 'day') {
-        grid.style.display = 'none';
-        dailyTasksContainer.style.display = 'block';
-
+        grid.style.display = 'none'; dailyTasksContainer.style.display = 'block';
         const dStr = formatDate(resultBaseDate);
         const record = dailyRecords[dStr];
 
@@ -1112,598 +823,280 @@
           if (record) {
             const achieved = record.tasks.filter(t => t.completed && !t.failed);
             const unachieved = record.tasks.filter(t => !t.completed || t.failed);
-
-            if (achieved.length > 0) {
-              achieved.forEach(t => achievedEl.innerHTML += `<div>・${t.name} (${t.time}) <span style="color:var(--rank-s)">+${t.toku + (t.earnedBonus || 0)}徳</span></div>`);
-            } else {
-              achievedEl.innerHTML = '<div>なし</div>';
-            }
-            if (unachieved.length > 0) {
-              unachieved.forEach(t => unachievedEl.innerHTML += `<div>・${t.name} (${t.time}) ${t.failed ? '<span style="color:var(--rank-f); font-size:12px;">(期限切れ)</span>' : ''}</div>`);
-            } else {
-              unachievedEl.innerHTML = '<div>なし</div>';
-            }
-          } else {
-            achievedEl.innerHTML = '<div>なし</div>';
-            unachievedEl.innerHTML = '<div>なし</div>';
-          }
+            if (achieved.length > 0) achieved.forEach(t => achievedEl.innerHTML += `<div>・${t.name} (${t.time}) <span style="color:var(--rank-s)">+${t.toku + (t.earnedBonus || 0)}徳</span></div>`);
+            else achievedEl.innerHTML = '<div>なし</div>';
+            
+            if (unachieved.length > 0) unachieved.forEach(t => unachievedEl.innerHTML += `<div>・${t.name} (${t.time}) ${t.failed ? '<span style="color:var(--rank-f); font-size:12px;">(期限切れ)</span>' : ''}</div>`);
+            else unachievedEl.innerHTML = '<div>なし</div>';
+          } else { achievedEl.innerHTML = '<div>なし</div>'; unachievedEl.innerHTML = '<div>なし</div>'; }
         } else {
-          mainRate = 0;
-          mainRank = '-';
-          achievedEl.innerHTML = '<div>データなし</div>';
-          unachievedEl.innerHTML = '<div>データなし</div>';
+          mainRate = 0; mainRank = '-';
+          achievedEl.innerHTML = '<div>データなし</div>'; unachievedEl.innerHTML = '<div>データなし</div>';
         }
         targetDateStrs.push(dStr);
 
       } else {
-        grid.style.display = 'grid';
-        dailyTasksContainer.style.display = 'none';
+        grid.style.display = 'grid'; dailyTasksContainer.style.display = 'none';
         let subItems = [];
 
         if (currentResultPeriod === 'week') {
           const weekDates = getWeekRange(resultBaseDate);
           targetDateStrs = weekDates.map(d => formatDate(d));
           const labels = ['月', '火', '水', '木', '金', '土', '日'];
-          weekDates.forEach((d, i) => {
-            const dStr = formatDate(d);
-            const rec = dailyRecords[dStr];
-            subItems.push({ 
-              label: labels[i], 
-              rate: rec ? rec.rate : 0, 
-              hasData: dStr <= todayStr, 
-              targetPeriod: 'day', 
-              targetDate: d 
-            });
-          });
-
+          weekDates.forEach((d, i) => { const dStr = formatDate(d); const rec = dailyRecords[dStr]; subItems.push({ label: labels[i], rate: rec ? rec.rate : 0, hasData: dStr <= todayStr, targetPeriod: 'day', targetDate: d }); });
         } else if (currentResultPeriod === 'month') {
           const mDates = getMonthWeeks(resultBaseDate.getFullYear(), resultBaseDate.getMonth()+1);
           targetDateStrs = mDates.map(d => formatDate(d));
           let weekNum = 1;
           for(let i=0; i<mDates.length; i+=7) {
-            const wStart = mDates[i];
-            const wDates = getWeekRange(wStart);
-            let wRateSum = 0, wCount = 0;
-            let hasPast = false;
-            wDates.forEach(wd => {
-              const wdStr = formatDate(wd);
-              if (wdStr <= todayStr) {
-                wCount++;
-                hasPast = true;
-                if (dailyRecords[wdStr]) { wRateSum += dailyRecords[wdStr].rate; }
-              }
-            });
-            subItems.push({
-              label: `第${weekNum++}週`,
-              rate: wCount > 0 ? Math.round(wRateSum/wCount) : 0,
-              hasData: hasPast,
-              targetPeriod: 'week',
-              targetDate: wStart
-            });
+            const wStart = mDates[i]; const wDates = getWeekRange(wStart);
+            let wRateSum = 0, wCount = 0, hasPast = false;
+            wDates.forEach(wd => { const wdStr = formatDate(wd); if (wdStr <= todayStr) { wCount++; hasPast = true; if (dailyRecords[wdStr]) { wRateSum += dailyRecords[wdStr].rate; } } });
+            subItems.push({ label: `第${weekNum++}週`, rate: wCount > 0 ? Math.round(wRateSum/wCount) : 0, hasData: hasPast, targetPeriod: 'week', targetDate: wStart });
           }
-
         } else if (currentResultPeriod === 'year') {
           targetDateStrs = [];
           for (let m = 1; m <= 12; m++) {
             let mDates = getMonthWeeks(resultBaseDate.getFullYear(), m);
             targetDateStrs = targetDateStrs.concat(mDates.map(d => formatDate(d)));
-            let mRateSum = 0, mCount = 0;
-            let hasPast = false;
-            mDates.forEach(md => {
-              const mdStr = formatDate(md);
-              if (mdStr <= todayStr) {
-                mCount++;
-                hasPast = true;
-                if (dailyRecords[mdStr]) { mRateSum += dailyRecords[mdStr].rate; }
-              }
-            });
-            subItems.push({
-              label: `${m}月`,
-              rate: mCount > 0 ? Math.round(mRateSum/mCount) : 0,
-              hasData: hasPast,
-              targetPeriod: 'month',
-              targetDate: new Date(resultBaseDate.getFullYear(), m-1, 1)
-            });
+            let mRateSum = 0, mCount = 0, hasPast = false;
+            mDates.forEach(md => { const mdStr = formatDate(md); if (mdStr <= todayStr) { mCount++; hasPast = true; if (dailyRecords[mdStr]) { mRateSum += dailyRecords[mdStr].rate; } } });
+            subItems.push({ label: `${m}月`, rate: mCount > 0 ? Math.round(mRateSum/mCount) : 0, hasData: hasPast, targetPeriod: 'month', targetDate: new Date(resultBaseDate.getFullYear(), m-1, 1) });
           }
         }
 
         targetDateStrs = [...new Set(targetDateStrs)];
 
-        let totalSum = 0; let validDays = 0;
-        tEarned = 0;
-        targetDateStrs.forEach(dStr => {
-          if (dStr <= todayStr) {
-            validDays++;
-            if (dailyRecords[dStr]) {
-              totalSum += dailyRecords[dStr].rate;
-              tEarned += dailyRecords[dStr].earned;
-            }
-          }
-        });
-        
-        if (validDays > 0) {
-          mainRate = Math.round(totalSum / validDays);
-          mainRank = calculateRank(mainRate);
-        } else {
-          mainRate = 0;
-          mainRank = '-';
-        }
+        let totalSum = 0; let validDays = 0; tEarned = 0;
+        targetDateStrs.forEach(dStr => { if (dStr <= todayStr) { validDays++; if (dailyRecords[dStr]) { totalSum += dailyRecords[dStr].rate; tEarned += dailyRecords[dStr].earned; } } });
+        if (validDays > 0) { mainRate = Math.round(totalSum / validDays); mainRank = calculateRank(mainRate); }
+        else { mainRate = 0; mainRank = '-'; }
 
         subItems.forEach(item => {
           const rank = item.hasData ? calculateRank(item.rate) : (item.targetDate > todayDateObj ? '-' : 'F');
-          const card = document.createElement('div');
-          card.className = 'sub-chart-card';
-
+          const card = document.createElement('div'); card.className = 'sub-chart-card';
           const strokeColor = item.hasData ? `var(--rank-${rank.toLowerCase()})` : '#2c2c2e';
           const dashVal = item.hasData ? item.rate : 0;
           const displayLabel = item.hasData ? `${rank} (${item.rate}%)` : rank;
 
           card.innerHTML = `
             <div class="sub-chart-title">${item.label}</div>
-            <svg width="36" height="36" viewBox="0 0 36 36">
-              <path stroke="#2c2c2e" stroke-width="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-              <path stroke="${strokeColor}" stroke-width="4" stroke-dasharray="${dashVal}, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            </svg>
+            <svg width="36" height="36" viewBox="0 0 36 36"><path stroke="#2c2c2e" stroke-width="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path stroke="${strokeColor}" stroke-width="4" stroke-dasharray="${dashVal}, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /></svg>
             <div class="sub-chart-rank ${rank !== '-' ? 'color-'+rank : ''}">${displayLabel}</div>
           `;
-
-          card.addEventListener('click', () => {
-            resultBaseDate = new Date(item.targetDate);
-            switchResultPeriod(item.targetPeriod);
-          });
-
+          card.addEventListener('click', () => { resultBaseDate = new Date(item.targetDate); switchResultPeriod(item.targetPeriod); });
           grid.appendChild(card);
         });
       }
 
-      transactions.forEach(t => {
-        if (targetDateStrs.includes(t.date)) {
-          if (t.type === 'spend') tSpent += t.amount;
-          if (t.type === 'special') tSpecial += t.amount;
-        }
-      });
+      transactions.forEach(t => { if (targetDateStrs.includes(t.date)) { if (t.type === 'spend') tSpent += t.amount; if (t.type === 'special') tSpecial += t.amount; } });
 
       tTotal = tEarned + tSpecial - tSpent;
-      document.getElementById('res-toku-earned').innerText = tEarned + '徳';
-      document.getElementById('res-toku-spent').innerText = tSpent + '徳';
-      document.getElementById('res-toku-special').innerText = tSpecial + '徳';
-      document.getElementById('res-toku-total').innerText = tTotal + '徳';
+      document.getElementById('res-toku-earned').innerText = tEarned + '徳'; document.getElementById('res-toku-spent').innerText = tSpent + '徳';
+      document.getElementById('res-toku-special').innerText = tSpecial + '徳'; document.getElementById('res-toku-total').innerText = tTotal + '徳';
+      document.getElementById('res-main-rank').innerText = mainRank; document.getElementById('res-main-rank').className = mainRank === '-' ? 'main-summary-rank' : `main-summary-rank color-${mainRank}`;
+      document.getElementById('res-main-rate').innerText = `${currentResultPeriod === 'day' ? '達成率' : '平均達成率'} ${mainRate}%`;
 
-      const mainRankEl = document.getElementById('res-main-rank');
-      mainRankEl.innerText = mainRank;
-      mainRankEl.className = mainRank === '-' ? 'main-summary-rank' : `main-summary-rank color-${mainRank}`;
-      
-      const ratePrefix = currentResultPeriod === 'day' ? '達成率' : '平均達成率';
-      document.getElementById('res-main-rate').innerText = `${ratePrefix} ${mainRate}%`;
-
-      let pdcaKeyStr = '';
-      if (currentResultPeriod === 'day') pdcaKeyStr = formatDate(resultBaseDate);
-      else if (currentResultPeriod === 'week') pdcaKeyStr = formatDate(getWeekRange(resultBaseDate)[0]);
-      else if (currentResultPeriod === 'month') pdcaKeyStr = `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}`;
-      else pdcaKeyStr = `${resultBaseDate.getFullYear()}`;
-      
+      // PDCAノート
+      let pdcaKeyStr = currentResultPeriod === 'day' ? formatDate(resultBaseDate) : currentResultPeriod === 'week' ? formatDate(getWeekRange(resultBaseDate)[0]) : currentResultPeriod === 'month' ? `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}` : `${resultBaseDate.getFullYear()}`;
       const pdcaKey = `${currentResultPeriod}_${pdcaKeyStr}`;
       const noteData = pdcaNotes[pdcaKey] || { good: '', bad: '', why: '' };
-      document.getElementById('pdca-good').value = noteData.good || '';
-      document.getElementById('pdca-bad').value = noteData.bad || '';
-      document.getElementById('pdca-why').value = noteData.why || '';
+      document.getElementById('pdca-good').value = noteData.good || ''; document.getElementById('pdca-bad').value = noteData.bad || ''; document.getElementById('pdca-why').value = noteData.why || '';
+
+      // --- 勉強の集計 (統合) ---
+      let totalTarget = 0, totalActual = 0;
+      let subjMap = {}, contMap = {};
+      let barData = []; 
+      let maxBarVal = 0;
+
+      if(currentResultPeriod !== 'year') {
+        targetDateStrs.forEach(dStr => {
+          let dayTarget = getDayTargetMins(dStr), dayActual = 0;
+          totalTarget += dayTarget;
+          let dayItems = {};
+          studyRecords.filter(r => r.date === dStr).forEach(r => {
+            dayActual += r.minutes; totalActual += r.minutes;
+            subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
+            const cKey = `${r.subject} - ${r.content}`;
+            contMap[cKey] = (contMap[cKey]||0) + r.minutes;
+            dayItems[r.subject] = (dayItems[r.subject]||0) + r.minutes;
+          });
+          
+          let label = dStr.slice(8,10);
+          if(currentResultPeriod==='week') { const days=['日','月','火','水','木','金','土']; label=days[new Date(dStr).getDay()]; }
+          
+          let bItems = Object.keys(dayItems).map(k => ({ subj: k, val: dayItems[k] }));
+          barData.push({ label, items: bItems, total: dayActual });
+          if(dayActual > maxBarVal) maxBarVal = dayActual;
+        });
+      } else {
+        for(let m=1; m<=12; m++) {
+          let mTarget=0, mActual=0; let mItems={};
+          const mDates = getMonthWeeks(resultBaseDate.getFullYear(), m).filter(d=>d.getMonth()+1===m);
+          mDates.forEach(d => {
+            const dStr = formatDate(d); mTarget += getDayTargetMins(dStr);
+            studyRecords.filter(r=>r.date===dStr).forEach(r => {
+              mActual += r.minutes; totalActual += r.minutes;
+              subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
+              contMap[`${r.subject} - ${r.content}`] = (contMap[`${r.subject} - ${r.content}`]||0) + r.minutes;
+              mItems[r.subject] = (mItems[r.subject]||0) + r.minutes;
+            });
+          });
+          totalTarget += mTarget;
+          let bItems = Object.keys(mItems).map(k => ({ subj: k, val: mItems[k] }));
+          barData.push({ label: `${m}月`, items: bItems, total: mActual });
+          if(mActual > maxBarVal) maxBarVal = mActual;
+        }
+      }
+
+      let sRate = totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : (totalActual>0 ? 100 : 0);
+      document.getElementById('res-study-target-time').innerText = formatTime(totalTarget);
+      document.getElementById('res-study-actual-time').innerText = formatTime(totalActual);
+      document.getElementById('res-study-chart-rate').innerText = `${sRate}%`;
+      document.getElementById('res-study-chart-miss').innerText = sRate >= 100 ? '達成!' : `未達 ${100-sRate}%`;
+      document.getElementById('res-study-chart-fill').setAttribute('stroke-dasharray', `${Math.min(sRate, 100)}, 100`);
+      document.getElementById('res-study-chart-fill').setAttribute('stroke', sRate>=100 ? 'var(--rank-s)' : 'var(--rank-b)');
+
+      const chartEl = document.getElementById('res-study-bar-chart'); chartEl.innerHTML = '';
+      barData.forEach(d => {
+        const col = document.createElement('div'); col.className = 'bar-col';
+        const wrap = document.createElement('div'); wrap.className = 'bar-segment-wrapper';
+        let hPer = maxBarVal > 0 ? (d.total / maxBarVal) * 100 : 0;
+        wrap.style.height = `${hPer}%`;
+        
+        d.items.forEach(i => {
+          const seg = document.createElement('div'); seg.className = 'bar-segment';
+          seg.style.height = `${(i.val / d.total) * 100}%`;
+          seg.style.backgroundColor = getSubjectColor(i.subj);
+          wrap.appendChild(seg);
+        });
+        
+        col.appendChild(wrap);
+        const lbl = document.createElement('div'); lbl.className = 'bar-label'; lbl.innerText = d.label;
+        col.appendChild(lbl);
+        chartEl.appendChild(col);
+      });
+
+      const dEl = document.getElementById('res-study-detail-stats'); dEl.innerHTML = '';
+      if(Object.keys(subjMap).length === 0) dEl.innerHTML = '<div style="color:var(--text-sub); text-align:center;">データなし</div>';
+      else {
+        Object.keys(subjMap).sort((a,b)=>subjMap[b]-subjMap[a]).forEach(s => {
+          const row = document.createElement('div');
+          row.innerHTML = `<div style="display:flex; justify-content:space-between; font-weight:bold; color:${getSubjectColor(s)}; margin-top:8px;"><span>■ ${s}</span><span>${formatTime(subjMap[s])}</span></div>`;
+          dEl.appendChild(row);
+          Object.keys(contMap).filter(k => k.startsWith(`${s} - `)).sort((a,b)=>contMap[b]-contMap[a]).forEach(c => {
+            const crow = document.createElement('div');
+            crow.innerHTML = `<div style="display:flex; justify-content:space-between; margin-left:16px; color:var(--text-main);"><span>${c.replace(`${s} - `, '')}</span><span>${formatTime(contMap[c])}</span></div>`;
+            dEl.appendChild(crow);
+          });
+        });
+      }
     }
 
     function savePdcaNote() {
-      let pdcaKeyStr = '';
-      if (currentResultPeriod === 'day') pdcaKeyStr = formatDate(resultBaseDate);
-      else if (currentResultPeriod === 'week') pdcaKeyStr = formatDate(getWeekRange(resultBaseDate)[0]);
-      else if (currentResultPeriod === 'month') pdcaKeyStr = `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}`;
-      else pdcaKeyStr = `${resultBaseDate.getFullYear()}`;
-      
+      let pdcaKeyStr = currentResultPeriod === 'day' ? formatDate(resultBaseDate) : currentResultPeriod === 'week' ? formatDate(getWeekRange(resultBaseDate)[0]) : currentResultPeriod === 'month' ? `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}` : `${resultBaseDate.getFullYear()}`;
       const pdcaKey = `${currentResultPeriod}_${pdcaKeyStr}`;
-      pdcaNotes[pdcaKey] = {
-        good: document.getElementById('pdca-good').value,
-        bad: document.getElementById('pdca-bad').value,
-        why: document.getElementById('pdca-why').value
-      };
-      localStorage.setItem('tokusei_pdca', JSON.stringify(pdcaNotes));
-      showToast('PDCAノートを保存しました');
+      pdcaNotes[pdcaKey] = { good: document.getElementById('pdca-good').value, bad: document.getElementById('pdca-bad').value, why: document.getElementById('pdca-why').value };
+      localStorage.setItem('tokusei_pdca', JSON.stringify(pdcaNotes)); showToast('PDCAノートを保存しました');
     }
 
     let currentCalYear = todayDateObj.getFullYear();
     let currentCalMonth = todayDateObj.getMonth() + 1;
 
-    function updateCalendarHeader() {
-      const monthStr = currentCalMonth.toString().padStart(2, '0');
-      document.getElementById('calendar-month-select').value = `${currentCalYear}-${monthStr}`;
-    }
-
-    function changeMonth(diff) {
-      currentCalMonth += diff;
-      if (currentCalMonth > 12) {
-        currentCalMonth = 1;
-        currentCalYear++;
-      } else if (currentCalMonth < 1) {
-        currentCalMonth = 12;
-        currentCalYear--;
-      }
-      updateCalendarHeader();
-      renderCalendar(); 
-    }
-
-    function selectMonth() {
-      const val = document.getElementById('calendar-month-select').value;
-      if (val) {
-        const [y, m] = val.split('-');
-        currentCalYear = parseInt(y, 10);
-        currentCalMonth = parseInt(m, 10);
-        renderCalendar();
-      }
-    }
+    function updateCalendarHeader() { document.getElementById('calendar-month-select').value = `${currentCalYear}-${currentCalMonth.toString().padStart(2, '0')}`; }
+    function changeMonth(diff) { currentCalMonth += diff; if (currentCalMonth > 12) { currentCalMonth = 1; currentCalYear++; } else if (currentCalMonth < 1) { currentCalMonth = 12; currentCalYear--; } updateCalendarHeader(); renderCalendar();  }
+    function selectMonth() { const val = document.getElementById('calendar-month-select').value; if (val) { const [y, m] = val.split('-'); currentCalYear = parseInt(y, 10); currentCalMonth = parseInt(m, 10); renderCalendar(); } }
 
     function renderCalendar() {
       const calGrid = document.getElementById('cal-grid');
-      while (calGrid.children.length > 7) {
-        calGrid.removeChild(calGrid.lastChild);
-      }
+      while (calGrid.children.length > 7) calGrid.removeChild(calGrid.lastChild);
 
-      let monthlyIncome = 0, monthlyExpense = 0;
-      let yearlyIncome = 0, yearlyExpense = 0;
-      
+      let monthlyIncome = 0, monthlyExpense = 0, yearlyIncome = 0, yearlyExpense = 0;
       const monthPrefix = `${currentCalYear}-${String(currentCalMonth).padStart(2,'0')}`;
       const yearPrefix = `${currentCalYear}-`;
 
       Object.keys(ledgerEntries).forEach(dStr => {
         if (dStr.startsWith(yearPrefix)) {
-          const entries = ledgerEntries[dStr];
-          entries.forEach(e => {
-            if (e.type === 'in') {
-              yearlyIncome += e.amount;
-              if (dStr.startsWith(monthPrefix)) monthlyIncome += e.amount;
-            } else {
-              yearlyExpense += e.amount;
-              if (dStr.startsWith(monthPrefix)) monthlyExpense += e.amount;
-            }
+          ledgerEntries[dStr].forEach(e => {
+            if (e.type === 'in') { yearlyIncome += e.amount; if (dStr.startsWith(monthPrefix)) monthlyIncome += e.amount; }
+            else { yearlyExpense += e.amount; if (dStr.startsWith(monthPrefix)) monthlyExpense += e.amount; }
           });
         }
       });
 
-      const monthlyBalance = monthlyIncome - monthlyExpense;
-      const yearlyBalance = yearlyIncome - yearlyExpense;
-
-      const mBalEl = document.getElementById('cal-monthly-balance');
-      mBalEl.innerText = (monthlyBalance >= 0 ? '+¥' : '-¥') + Math.abs(monthlyBalance);
-      mBalEl.style.color = monthlyBalance >= 0 ? 'var(--rank-b)' : 'var(--rank-a)';
-
-      const yBalEl = document.getElementById('cal-yearly-balance');
-      yBalEl.innerText = (yearlyBalance >= 0 ? '+¥' : '-¥') + Math.abs(yearlyBalance);
-      yBalEl.style.color = yearlyBalance >= 0 ? 'var(--rank-b)' : 'var(--rank-a)';
+      const mBal = monthlyIncome - monthlyExpense, yBal = yearlyIncome - yearlyExpense;
+      document.getElementById('cal-monthly-balance').innerText = (mBal >= 0 ? '+¥' : '-¥') + Math.abs(mBal);
+      document.getElementById('cal-monthly-balance').style.color = mBal >= 0 ? 'var(--rank-b)' : 'var(--rank-a)';
+      document.getElementById('cal-yearly-balance').innerText = (yBal >= 0 ? '+¥' : '-¥') + Math.abs(yBal);
+      document.getElementById('cal-yearly-balance').style.color = yBal >= 0 ? 'var(--rank-b)' : 'var(--rank-a)';
 
       const firstDay = new Date(currentCalYear, currentCalMonth - 1, 1).getDay();
       for (let i = 0; i < firstDay; i++) calGrid.appendChild(document.createElement('div'));
-      
       const lastDate = new Date(currentCalYear, currentCalMonth, 0).getDate();
 
       for (let day = 1; day <= lastDate; day++) {
-        const cell = document.createElement('div');
-        cell.className = 'cal-cell';
-        
+        const cell = document.createElement('div'); cell.className = 'cal-cell';
         const dateStr = `${currentCalYear}-${String(currentCalMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const isToday = dateStr === todayStr;
-        const isFuture = dateStr > todayStr;
-        
-        if (isToday) cell.classList.add('today');
+        if (dateStr === todayStr) cell.classList.add('today');
 
         let rankHtml = '', tokuHtml = '', ledgerHtml = '';
-
-        if (isFuture) {
-          rankHtml = `<div class="cal-rank-big" style="color:transparent;">-</div>`;
-          tokuHtml = `<div class="cal-toku-gray" style="color:transparent;">-</div>`;
+        if (dateStr > todayStr) {
+          rankHtml = `<div class="cal-rank-big" style="color:transparent;">-</div>`; tokuHtml = `<div class="cal-toku-gray" style="color:transparent;">-</div>`;
         } else {
-          const record = dailyRecords[dateStr];
-          const dayRank = record ? record.rank : 'F';
-          const dayToku = record ? record.earned : 0;
-          rankHtml = `<div class="cal-rank-big color-${dayRank}">${dayRank}</div>`;
-          tokuHtml = `<div class="cal-toku-gray">${dayToku}徳</div>`;
+          const record = dailyRecords[dateStr]; const dayRank = record ? record.rank : 'F'; const dayToku = record ? record.earned : 0;
+          rankHtml = `<div class="cal-rank-big color-${dayRank}">${dayRank}</div>`; tokuHtml = `<div class="cal-toku-gray">${dayToku}徳</div>`;
         }
 
-        const dayLedgers = ledgerEntries[dateStr] || [];
-        let dayBalance = 0;
-        dayLedgers.forEach(l => {
-          if (l.type === 'in') dayBalance += l.amount;
-          if (l.type === 'out') dayBalance -= l.amount;
-        });
+        let dayBalance = 0; (ledgerEntries[dateStr] || []).forEach(l => { if (l.type === 'in') dayBalance += l.amount; if (l.type === 'out') dayBalance -= l.amount; });
+        if (dayBalance > 0) ledgerHtml = `<div class="cal-ledger-blue">+¥${dayBalance}</div>`; else if (dayBalance < 0) ledgerHtml = `<div class="cal-ledger-red">-¥${Math.abs(dayBalance)}</div>`;
 
-        if (dayBalance > 0) ledgerHtml = `<div class="cal-ledger-blue">+¥${dayBalance}</div>`;
-        else if (dayBalance < 0) ledgerHtml = `<div class="cal-ledger-red">-¥${Math.abs(dayBalance)}</div>`;
-
-        cell.innerHTML = `
-          <div class="cal-num">${day}</div>
-          ${rankHtml}
-          ${tokuHtml}
-          ${ledgerHtml}
-        `;
-
-        if (!isFuture) {
-          cell.addEventListener('click', () => {
-            currentSelectedDateStr = dateStr;
-            const record = dailyRecords[dateStr];
-            openDayDetail(dateStr, record ? record.rank : 'F', record ? record.rate : 0, record ? record.earned : 0);
-          });
-        }
-
+        cell.innerHTML = `<div class="cal-num">${day}</div>${rankHtml}${tokuHtml}${ledgerHtml}`;
+        if (dateStr <= todayStr) cell.addEventListener('click', () => { currentSelectedDateStr = dateStr; const record = dailyRecords[dateStr]; openDayDetail(dateStr, record ? record.rank : 'F', record ? record.rate : 0, record ? record.earned : 0); });
         calGrid.appendChild(cell);
       }
     }
 
     function openDayDetail(dateStr, rank, rate, toku) {
-      const [y, m, d] = dateStr.split('-');
-      document.getElementById('day-detail-date').innerText = `${y}年${parseInt(m)}月${parseInt(d)}日`;
-      const rankRateEl = document.getElementById('day-detail-rank-rate');
-      rankRateEl.innerText = `${rank} (${rate}%)`;
-      rankRateEl.className = `color-${rank}`;
-
+      const [y, m, d] = dateStr.split('-'); document.getElementById('day-detail-date').innerText = `${y}年${parseInt(m)}月${parseInt(d)}日`;
+      document.getElementById('day-detail-rank-rate').innerText = `${rank} (${rate}%)`; document.getElementById('day-detail-rank-rate').className = `color-${rank}`;
       document.getElementById('day-detail-toku').innerText = `${toku}徳`;
-      
-      renderLedgerList();
-      switchDetailMode('toku');
-      document.getElementById('day-detail-modal').classList.add('active');
-      document.getElementById('tab-bar').classList.add('hidden');
+      renderLedgerList(); switchDetailMode('toku'); document.getElementById('day-detail-modal').classList.add('active'); document.getElementById('tab-bar').classList.add('hidden');
     }
 
     function renderLedgerList() {
-      const listEl = document.getElementById('ledger-history-list');
-      const entries = ledgerEntries[currentSelectedDateStr] || [];
-      listEl.innerHTML = '';
-
-      if (entries.length === 0) {
-        listEl.innerHTML = '<div style="color:var(--text-sub); text-align:center;">出入記録はありません</div>';
-        return;
-      }
-
+      const listEl = document.getElementById('ledger-history-list'); const entries = ledgerEntries[currentSelectedDateStr] || []; listEl.innerHTML = '';
+      if (entries.length === 0) { listEl.innerHTML = '<div style="color:var(--text-sub); text-align:center;">出入記録はありません</div>'; return; }
       entries.forEach(e => {
-        const item = document.createElement('div');
-        item.style.display = 'flex';
-        item.style.justifyContent = 'space-between';
-        const isOut = e.type === 'out';
-        const color = isOut ? 'var(--rank-a)' : 'var(--rank-f)';
-        const sign = isOut ? '-' : '+';
-        item.innerHTML = `<span>${e.reason}</span><span style="color:${color}; font-weight:bold;">${sign}¥${e.amount}</span>`;
-        listEl.appendChild(item);
+        const item = document.createElement('div'); item.style.display = 'flex'; item.style.justifyContent = 'space-between';
+        const isOut = e.type === 'out', color = isOut ? 'var(--rank-a)' : 'var(--rank-f)', sign = isOut ? '-' : '+';
+        item.innerHTML = `<span>${e.reason}</span><span style="color:${color}; font-weight:bold;">${sign}¥${e.amount}</span>`; listEl.appendChild(item);
       });
     }
 
     function addLedgerEntry() {
-      const type = document.getElementById('ledger-type').value;
-      const amount = parseInt(document.getElementById('ledger-amount').value, 10);
-      const reason = document.getElementById('ledger-reason').value.trim();
-
-      if (isNaN(amount) || amount <= 0 || !reason) {
-        showToast('金額と理由を入力してください');
-        return;
-      }
-
+      const type = document.getElementById('ledger-type').value, amount = parseInt(document.getElementById('ledger-amount').value, 10), reason = document.getElementById('ledger-reason').value.trim();
+      if (isNaN(amount) || amount <= 0 || !reason) return showToast('金額と理由を入力してください');
       if (!ledgerEntries[currentSelectedDateStr]) ledgerEntries[currentSelectedDateStr] = [];
-      ledgerEntries[currentSelectedDateStr].push({ type, amount, reason });
-      localStorage.setItem('tokusei_ledger', JSON.stringify(ledgerEntries));
-
-      document.getElementById('ledger-amount').value = '';
-      document.getElementById('ledger-reason').value = '';
-
-      renderLedgerList();
-      saveAndRefresh();
-      showToast('出入記録を追加しました');
+      ledgerEntries[currentSelectedDateStr].push({ type, amount, reason }); localStorage.setItem('tokusei_ledger', JSON.stringify(ledgerEntries));
+      document.getElementById('ledger-amount').value = ''; document.getElementById('ledger-reason').value = ''; renderLedgerList(); saveAndRefresh(); showToast('出入記録を追加しました');
     }
 
     function switchDetailMode(mode) {
-      const btnToku = document.getElementById('btn-mode-toku');
-      const btnLedger = document.getElementById('btn-mode-ledger');
-      const contentToku = document.getElementById('detail-mode-toku-content');
-      const contentLedger = document.getElementById('detail-mode-ledger-content');
-
-      if (mode === 'toku') {
-        btnToku.classList.add('active');
-        btnLedger.classList.remove('active');
-        contentToku.style.display = 'block';
-        contentLedger.style.display = 'none';
-      } else {
-        btnLedger.classList.add('active');
-        btnToku.classList.remove('active');
-        contentLedger.style.display = 'block';
-        contentToku.style.display = 'none';
-      }
+      document.getElementById('btn-mode-toku').classList[mode==='toku'?'add':'remove']('active');
+      document.getElementById('btn-mode-ledger').classList[mode==='ledger'?'add':'remove']('active');
+      document.getElementById('detail-mode-toku-content').style.display = mode==='toku'?'block':'none';
+      document.getElementById('detail-mode-ledger-content').style.display = mode==='ledger'?'block':'none';
     }
 
-    function updateWalletUI(taskEarnedToku = 0) {
-      let specialSum = 0, spendSum = 0;
-      transactions.forEach(t => {
-        if (t.type === 'special') specialSum += t.amount;
-        if (t.type === 'spend') spendSum += t.amount;
-      });
-
-      let taskSum = 0;
-      Object.keys(dailyRecords).forEach(k => {
-        taskSum += dailyRecords[k].earned;
-      });
-
-      const cumEarned = taskSum + specialSum;
-      const cumSpent = spendSum;
-      const currentBalance = cumEarned - cumSpent;
-
-      document.getElementById('wallet-current-toku').innerText = `${currentBalance}徳`;
-      document.getElementById('wallet-cum-earned').innerText = cumEarned;
-      document.getElementById('wallet-cum-spent').innerText = cumSpent;
-
-      const historyEl = document.getElementById('history-list');
-      historyEl.innerHTML = '';
-      let allItems = [...transactions];
-      
-      if (taskEarnedToku > 0) {
-        allItems.unshift({ title: '本日の任務達成', date: todayStr, type: 'task', amount: taskEarnedToku, memo: '日々の積み重ね' });
-      }
-
-      if (allItems.length === 0) {
-        historyEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding:20px;">履歴はありません</div>';
-        return;
-      }
-
-      allItems.forEach(item => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'history-item';
-        const isPlus = item.type !== 'spend';
-        const valClass = isPlus ? 'plus' : 'minus';
-        const valPrefix = isPlus ? '+' : '-';
-        itemEl.innerHTML = `
-          <div>
-            <div class="history-title">${item.title || item.reason}</div>
-            <div class="history-meta">${item.date} ${item.memo ? '• ' + item.memo : ''}</div>
-          </div>
-          <div class="history-val ${valClass}">${valPrefix}${item.amount}徳</div>
-        `;
-
-        if (item.type === 'special' || item.type === 'spend') {
-          let pressTimer;
-          let isLongPress = false;
-
-          const startPress = (e) => {
-            isLongPress = false;
-            pressTimer = setTimeout(() => {
-              isLongPress = true;
-              if (navigator.vibrate) navigator.vibrate(50);
-              
-              if (confirm(`履歴「${item.reason}」を削除しますか？`)) {
-                transactions = transactions.filter(t => t.id !== item.id);
-                localStorage.setItem('tokusei_transactions', JSON.stringify(transactions));
-                updateUI(); 
-                showToast('履歴を削除しました');
-              }
-            }, 1200);
-          };
-
-          const cancelPress = () => clearTimeout(pressTimer);
-
-          itemEl.addEventListener('touchstart', startPress, {passive: true});
-          itemEl.addEventListener('touchmove', cancelPress, {passive: true});
-          itemEl.addEventListener('touchend', cancelPress);
-          itemEl.addEventListener('mousedown', startPress);
-          itemEl.addEventListener('mouseup', cancelPress);
-          itemEl.addEventListener('mouseleave', cancelPress);
-
-          itemEl.addEventListener('click', (e) => {
-            if (isLongPress) {
-              e.preventDefault();
-            } else {
-              showToast('削除するには長押ししてください');
-            }
-          });
-        }
-
-        historyEl.appendChild(itemEl);
-      });
-    }
-
-    function openModal(mode) {
-      const modal = document.getElementById('modal-overlay');
-      const title = document.getElementById('modal-title');
-      const submitBtn = document.getElementById('modal-submit-btn');
-
-      document.getElementById('modal-amount').value = '';
-      document.getElementById('modal-reason').value = '';
-      document.getElementById('modal-memo').value = '';
-
-      if (mode === 'special') {
-        title.innerText = '特別徳の追加';
-        document.getElementById('modal-amount-label').innerText = '獲得する徳';
-        document.getElementById('modal-reason-label').innerText = '理由 (必須)';
-        submitBtn.innerText = '追加する';
-        submitBtn.className = 'btn-modal submit-green';
-      } else {
-        title.innerText = '徳を使う';
-        document.getElementById('modal-amount-label').innerText = '使用する徳';
-        document.getElementById('modal-reason-label').innerText = '用途 (必須)';
-        submitBtn.innerText = 'この内容で使う';
-        submitBtn.className = 'btn-modal submit-red';
-      }
-
-      modal.classList.add('active');
-      document.getElementById('tab-bar').classList.add('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
-      document.getElementById('tab-bar').classList.remove('hidden');
-    }
-
-    function submitModal() {
-      const amount = parseInt(document.getElementById('modal-amount').value, 10);
-      const reason = document.getElementById('modal-reason').value.trim();
-      const memo = document.getElementById('modal-memo').value.trim();
-
-      if (isNaN(amount) || amount <= 0 || !reason) {
-        showToast('入力内容を確認してください');
-        return;
-      }
-
-      const isSpend = document.getElementById('modal-title').innerText === '徳を使う';
-      const type = isSpend ? 'spend' : 'special';
-
-      transactions.unshift({ id: Date.now(), type: type, amount, reason, memo, date: todayStr });
-      localStorage.setItem('tokusei_transactions', JSON.stringify(transactions));
-      closeModal('modal-overlay');
-      saveAndRefresh();
-      showToast('記録しました');
-    }
-
-    function saveAndRefresh() {
-      localStorage.setItem('tokusei_tasks', JSON.stringify(tasks));
-      updateUI();
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.innerText = message;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    function switchTab(tabName, element) {
-      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(`page-${tabName}`).classList.add('active');
-      element.classList.add('active');
-      if (tabName === 'result') updateResultView();
-    }
-
+    // 自動リロードと通知ループ
     setInterval(() => {
-      // 日付またぎの検知と自動リロード
-      const nowStr = formatDate(getLogicalDate());
-      if (nowStr !== localStorage.getItem('tokusei_tasks_date')) {
-         location.reload();
-         return;
-      }
-      
-      let changed = false;
-      const nowMins = getCurrentLogicalMinutes();
-      const isNotifyOk = ('Notification' in window) && (Notification.permission === 'granted');
-      
-      tasks.forEach(task => {
-        if (!task.completed && task.deadline) {
-          if (nowMins > getLogicalMinutes(task.deadline)) {
-            task.completed = true;
-            task.failed = true;
-            changed = true;
-          }
-        }
-        
-        if (task.remind && !task.completed && !task.failed) {
-          const taskMins = getLogicalMinutes(task.time);
-          if (nowMins === taskMins && !task.notified) {
-            if (isNotifyOk) {
-              new Notification("👑徳政 任務リマインド", { body: `「${task.name}」のお時間です。` });
-            }
-            task.notified = true;
-            changed = true;
-          }
-        }
+      if(formatDate(getLogicalDate()) !== localStorage.getItem('tokusei_tasks_date')) return location.reload();
+      let changed=false; const now=getCurrentLogicalMinutes(); const ok=('Notification' in window)&&(Notification.permission==='granted');
+      tasks.forEach(t => {
+        if(t.useDeadline && t.deadline && !t.completed && now>getLogicalMinutes(t.deadline)) { t.completed=true; t.failed=true; changed=true; }
+        if(t.remind && !t.completed && !t.failed && now===getLogicalMinutes(t.time) && !t.notified) { if(ok) new Notification("👑徳政 任務リマインド", {body:`「${t.name}」のお時間です。`}); t.notified=true; changed=true; }
       });
-
-      if (changed) saveAndRefresh();
+      if(changed) saveAndRefresh();
     }, 60000);
 
     updateCalendarHeader();
