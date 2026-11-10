@@ -48,6 +48,9 @@
     .task-time { font-size: 14px; font-weight: bold; color: var(--rank-gold); line-height: 1.1; }
     .task-name { font-size: 17px; font-weight: 500; margin-top: 0; line-height: 1.2; }
     
+    /* 勉強記録のタスク項目は暗くしない */
+    #study-view-record .task-item { opacity: 1 !important; background: var(--card-bg) !important; border-color: var(--card-border) !important; }
+
     /* スイッチ */
     .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -73,13 +76,13 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* ランクスプライト適用クラス */
-    .rank-shield-lg { width: 100px; height: 100px; margin: 0 auto 10px auto; border-radius: 50%; background-image: url('image_8468bd.jpg'); background-size: 400% 200%; background-repeat: no-repeat; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-    .rank-shield-sm { width: 50px; height: 50px; margin: 0 auto 4px auto; border-radius: 50%; background-image: url('image_8468bd.jpg'); background-size: 400% 200%; background-repeat: no-repeat; border: 2px solid rgba(255,255,255,0.2); }
+    /* 8つのランク（横4列×縦2行）を正確に切り出すスプライト設定[cite: 3] */
+    .rank-shield-lg { width: 100px; height: 100px; margin: 0 auto 10px auto; border-radius: 50%; background-image: url('S__42205194_2.jpg'); background-size: 400% 200%; background-repeat: no-repeat; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .rank-shield-sm { width: 45px; height: 45px; margin: 0 auto 4px auto; border-radius: 50%; background-image: url('S__42205194_2.jpg'); background-size: 400% 200%; background-repeat: no-repeat; border: 2px solid rgba(255,255,255,0.2); }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     .subjects-rank-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 16px; }
-    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 12px; padding: 8px 2px; text-align: center; cursor: pointer; }
+    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 2px; text-align: center; cursor: pointer; }
     
     .pdca-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; }
     .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-gold); margin-bottom: 12px; }
@@ -137,7 +140,7 @@
       <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
       <div class="drawer-item" onclick="toggleDrawer(false); openTestScoreModal();">📝 予備校テスト偏差値入力</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.0');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.4');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -178,7 +181,7 @@
     </div>
 
     <div id="study-view-score" style="display:none; padding:0 16px;">
-      <button class="btn-action add" style="margin-bottom: 16px;" onclick="openTestScoreModal()">＋ 予備校テスト偏差値を入力</button>
+      <button class="btn-action add" style="margin-bottom: 16px;" onclick="openTestScoreModal()">＋ 予備校テスト・模試を入力</button>
       <div class="section-title" style="margin:12px 0 8px 0;">入力済みテスト一覧</div>
       <div id="test-score-list" style="display:flex; flex-direction:column; gap:10px;"></div>
     </div>
@@ -188,50 +191,36 @@
   <div id="page-result" class="page">
     <div class="segment-control" style="background:#1c1c1e; border:1px solid var(--card-border);">
       <button class="segment-btn active" id="res-seg-study" onclick="switchResultMainTab('study')">📚 勉強</button>
-      <button class="segment-btn" id="res-seg-toku" onclick="switchResultMainTab('toku')">🔮 徳・任務</button>
+      <button class="segment-btn" id="res-seg-toku" onclick="switchResultMainTab('toku')">🔮 徳</button>
     </div>
 
     <!-- 【勉強結果サブビュー】 -->
     <div id="res-sub-study" class="res-sub-view">
-      <div class="segment-control">
-        <button class="segment-btn active" id="res-study-seg-day" onclick="switchResultPeriod('day')">日</button>
-        <button class="segment-btn" id="res-study-seg-week" onclick="switchResultPeriod('week')">週</button>
-        <button class="segment-btn" id="res-study-seg-month" onclick="switchResultPeriod('month')">月</button>
-        <button class="segment-btn" id="res-study-seg-year" onclick="switchResultPeriod('year')">年</button>
-      </div>
-      <div class="result-nav-header">
-        <button class="result-arrow-btn" onclick="shiftResultTarget(-1)">‹</button>
-        <div class="date-header" id="res-study-date-display"></div>
-        <button class="result-arrow-btn" onclick="shiftResultTarget(1)">›</button>
-      </div>
-
-      <!-- 勉強結果ヒーローカード -->
       <div class="study-result-hero">
+        <!-- レベリング表示（全体ランクの上・横長の四角・タップで累計勉強時間確認） -->
+        <div id="hero-level-box" style="background:#242428; border:1px solid var(--card-border); border-radius:10px; padding:10px 14px; margin-bottom:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="openLevelDetailModal()">
+          <div style="font-size:13px; color:var(--text-sub);">レベリング</div>
+          <div style="font-size:16px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1 (累計 0.0時間)</div>
+        </div>
+
         <div style="font-size:12px; color:var(--text-sub); margin-bottom:6px;">全体平均ランク</div>
         <div class="rank-shield-lg" id="overall-rank-shield" style="background-position:0% 0%;"></div>
         <div id="overall-rank-name" style="font-size:18px; font-weight:bold; color:var(--rank-gold);">未判定</div>
         <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
 
-        <!-- 科目ランク ＆ レベルグリッド (各科目は全体シールドの1/4程度の面積) -->
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
 
-        <!-- 勉強時間のレベル・切替部分（タップで切替） -->
-        <div id="study-time-display-box" style="margin-top:16px; padding:10px; background:#242428; border-radius:10px; cursor:pointer;" onclick="cycleTimeDisplayMode()">
-          <div style="font-size:11px; color:var(--text-sub);" id="time-mode-label">累計学習時間 (タップで切替)</div>
+        <div id="study-time-display-box" style="margin-top:16px; padding:10px; background:#242428; border-radius:10px; cursor:pointer;" onclick="openLevelDetailModal()">
+          <div style="font-size:11px; color:var(--text-sub);">累計学習時間 (タップでグラフ詳細)</div>
           <div style="font-size:18px; font-weight:bold; color:var(--rank-gold);" id="time-mode-value">0時間0分</div>
         </div>
       </div>
 
-      <!-- 目標達成率 -->
       <div class="main-summary-box">
         <div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">勉強の目標達成率</div>
         <div class="main-summary-rate" id="res-study-rate-val" style="font-size:28px; font-weight:bold;">0%</div>
       </div>
 
-      <div class="result-daily-tasks-box">
-        <div style="font-size:14px; font-weight:bold; margin-bottom:4px;">積み上げ学習時間グラフ</div>
-        <div class="bar-chart-container" id="res-study-bar-chart"></div>
-      </div>
       <div class="result-daily-tasks-box">
         <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">科目別 / 内容別 詳細</div>
         <div id="res-study-detail-stats" style="font-size:13px; display:flex; flex-direction:column; gap:8px;"></div>
@@ -269,7 +258,6 @@
       </div>
       <div class="sub-charts-grid" id="sub-charts-grid"></div>
 
-      <!-- PDCAノート -->
       <div class="pdca-card">
         <div class="pdca-title">📝 振り返り・PDCAノート</div>
         <input type="text" class="pdca-input" id="pdca-good" placeholder="⭕ できたこと">
@@ -314,10 +302,10 @@
     </div>
   </div>
 
-  <!-- モーダル: 科目タップ詳細確認 -->
+  <!-- モーダル: 科目・レベルタップ詳細確認 -->
   <div class="modal-overlay" id="subject-detail-modal" onclick="closeModal('subject-detail-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <div class="modal-title" id="subject-detail-title">科目詳細</div>
+      <div class="modal-title" id="subject-detail-title">詳細データ</div>
       <div id="subject-detail-body" style="font-size:14px; display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; margin-bottom:16px;"></div>
       <button class="btn-modal cancel" style="width:100%;" onclick="closeModal('subject-detail-modal')">閉じる</button>
     </div>
@@ -467,17 +455,27 @@
 </div>
 
   <script>
-    // --- ランク判定・スプライト位置ロジック ---
+    // --- ランク判定・スプライト位置ロジック (8つのランクに対応：左上から右へブロンズ〜プラチナ、左下から右へエメラルド〜チャレンジャー)[cite: 3] ---
     function getRankInfoByDeviation(dev) {
-      if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', pos: '0 0 0 0', color: '#8e8e93' };
+      if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', pos: '0% 0%', color: '#8e8e93' };
       if (dev < 40) return { name: 'ブロンズ', pos: '0% 0%', color: '#cd7f32' };
-      if (dev < 45) return { name: 'シルバー', pos: '33.33% 0%', color: '#c0c0c0' };
-      if (dev < 50) return { name: 'ゴールド', pos: '66.66% 0%', color: '#ffd700' };
+      if (dev < 45) return { name: 'シルバー', pos: '33.333% 0%', color: '#c0c0c0' };
+      if (dev < 50) return { name: 'ゴールド', pos: '66.666% 0%', color: '#ffd700' };
       if (dev < 55) return { name: 'プラチナ', pos: '100% 0%', color: '#00e5ff' };
       if (dev < 60) return { name: 'エメラルド', pos: '0% 100%', color: '#30d158' };
-      if (dev < 65) return { name: 'ダイヤモンド', pos: '33.33% 100%', color: '#0a84ff' };
-      if (dev <= 67) return { name: 'マスター', pos: '66.66% 100%', color: '#bf5af2' };
+      if (dev < 65) return { name: 'ダイヤモンド', pos: '33.333% 100%', color: '#0a84ff' };
+      if (dev <= 67) return { name: 'マスター', pos: '66.666% 100%', color: '#bf5af2' };
       return { name: 'チャレンジャー', pos: '100% 100%', color: '#ff9f0a' };
+    }
+
+    // --- レベル計算ロジック（1500時間で100Lv、Lv.1に約10時間、高レベルほど上がりにくくなる勾配） ---
+    function calculateLevel(totalHours) {
+      if (totalHours <= 0) return { level: 1, progress: 0 };
+      // 逆算公式からレベルを算出 (0.0505 L^2 + 10.05 L = T)
+      const discriminant = 10.05 * 10.05 - 4 * 0.0505 * (-totalHours);
+      let level = (-10.05 + Math.sqrt(discriminant)) / (2 * 0.0505);
+      level = Math.max(1, Math.min(100, Math.floor(level)));
+      return level;
     }
 
     // --- 共通ユーティリティ（午前5時切り替え） ---
@@ -565,7 +563,6 @@
 
     // --- 今日の任務 ---
     function updateUI() {
-      // 午前5時基準で日が変わっているかチェック
       const currentLogical = formatDate(getLogicalDate());
       if (currentLogical !== localStorage.getItem('tokusei_tasks_date')) {
         return location.reload();
@@ -706,7 +703,7 @@
       if(testScores.length === 0) list.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center; padding:20px;">テスト結果の記録がありません</div>';
     }
 
-    // --- タイマー（スイッチ式） ---
+    // --- タイマー（スイッチ式・自由オンオフ。オフにしても暗くならない） ---
     function getTodayTargetItems() {
       let targets = [];
       const dayTypeStr = getTodayTemplateType(todayStr);
@@ -741,7 +738,7 @@
         const isDone = todaysRecords.some(r => r.subject===t.subject && r.content===t.content && r.isPlanItem);
         const isRunning = runningTimers[timerKey] !== undefined;
 
-        const el = document.createElement('div'); el.className = `task-item ${isDone?'completed':''}`;
+        const el = document.createElement('div'); el.className = 'task-item';
         el.innerHTML = `
           <div>
             <div style="font-size:11px; color:var(--text-sub);">${t.planName}</div>
@@ -752,7 +749,7 @@
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <label class="switch">
-              <input type="checkbox" ${isRunning?'checked':''} ${isDone?'disabled':''} onchange="toggleStudyTimer('${timerKey}', '${t.subject}', '${t.content}', ${targetMins}, this.checked)">
+              <input type="checkbox" ${isRunning?'checked':''} onchange="toggleStudyTimer('${timerKey}', '${t.subject}', '${t.content}', ${targetMins}, this.checked)">
               <span class="slider"></span>
             </label>
           </div>
@@ -762,7 +759,7 @@
       if(pList.innerHTML==='') pList.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center;">今日の予定タスクはありません</div>';
 
       todaysRecords.forEach(r => {
-        const el = document.createElement('div'); el.className = 'task-item completed';
+        const el = document.createElement('div'); el.className = 'task-item';
         el.innerHTML = `
           <div><div style="font-size:14px; font-weight:bold;">${r.subject} : ${r.content}</div></div>
           <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${r.minutes}分</span>
@@ -798,14 +795,7 @@
           clearInterval(runningTimers[timerKey]);
           delete runningTimers[timerKey];
         }
-        const secs = activeTimers[timerKey] || 0;
-        const mins = Math.ceil(secs / 60);
-        if(mins > 0) {
-          quickStudyRecord(subject, content, mins, true);
-          activeTimers[timerKey] = 0;
-          localStorage.setItem('tokusei_active_timers', JSON.stringify(activeTimers));
-          showToast(`${mins}分を勉強として記録しました`);
-        }
+        showToast('タイマーを一時停止しました');
       }
       renderStudyRecordView();
     }
@@ -1090,13 +1080,28 @@
 
     function formatTime(mins) { return `${Math.floor(mins/60)}時間${mins%60}分`; }
 
-    let timeDisplayMode = 0; 
-    function cycleTimeDisplayMode() {
-      timeDisplayMode = (timeDisplayMode + 1) % 3;
-      updateResultView();
+    // レベルボックス＆時間ボックス共通のポップアップ（グラフと累計時間・レベリング詳細）
+    function openLevelDetailModal() {
+      const totalCumulativeMins = studyRecords.reduce((acc, r) => acc + r.minutes, 0);
+      const totalHours = totalCumulativeMins / 60;
+      const currentLevel = calculateLevel(totalHours);
+
+      let html = `<div style="font-weight:bold; margin-bottom:8px; text-align:center;">📊 レベリング & 積み上げ学習時間</div>`;
+      html += `<div style="background:#242428; padding:12px; border-radius:10px; margin-bottom:12px; text-align:center;">
+                <div style="font-size:18px; font-weight:bold; color:var(--rank-gold); margin-bottom:4px;">Lv. ${currentLevel}</div>
+                <div style="font-size:13px; color:var(--text-sub);">累計学習時間: <strong>${formatTime(totalCumulativeMins)}</strong> (${totalHours.toFixed(1)}時間)<br>※1500時間でLv.100</div>
+               </div>`;
+      html += `<div style="display:flex; justify-content:center; gap:6px; margin-bottom:12px;">
+                <button id="pop-btn-day" style="background:#0a84ff; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="renderPopupChart('day')">日別</button>
+                <button id="pop-btn-week" style="background:#2c2c2e; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="renderPopupChart('week')">週別</button>
+                <button id="pop-btn-month" style="background:#2c2c2e; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="renderPopupChart('month')">月別</button>
+               </div>`;
+      html += `<div id="popup-chart-container" style="min-height:160px;"></div>`;
+      
+      openSubjectDetailModal('レベリング & 学習グラフ', html);
+      renderPopupChart('day');
     }
 
-    // --- タップ詳細モーダル表示 ---
     function openSubjectDetailModal(title, htmlContent) {
       document.getElementById('subject-detail-title').innerText = title;
       document.getElementById('subject-detail-body').innerHTML = htmlContent;
@@ -1116,7 +1121,6 @@
       } else if (currentResultPeriod === 'year') {
         dateText = `${resultBaseDate.getFullYear()}年`;
       }
-      document.getElementById('res-study-date-display').innerText = dateText;
       document.getElementById('result-date-display').innerText = dateText;
 
       let targetDateStrs = [];
@@ -1133,7 +1137,6 @@
       }
       targetDateStrs = [...new Set(targetDateStrs)];
 
-      // --- 1. 徳・任務データの集計 ---
       let mainRate = 0, mainRank = 'F', tEarned = 0, tSpent = 0, tSpecial = 0, tTotal = 0;
       const grid = document.getElementById('sub-charts-grid');
       const dailyTasksContainer = document.getElementById('res-daily-tasks-container');
@@ -1215,7 +1218,6 @@
       document.getElementById('res-main-rank').innerText = mainRank; 
       document.getElementById('res-main-rate').innerText = `${currentResultPeriod === 'day' ? '達成率' : '平均達成率'} ${mainRate}%`;
 
-      // PDCAノート
       let pdcaKeyStr = currentResultPeriod === 'day' ? formatDate(resultBaseDate) : currentResultPeriod === 'week' ? formatDate(getWeekRange(resultBaseDate)[0]) : currentResultPeriod === 'month' ? `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}` : `${resultBaseDate.getFullYear()}`;
       const pdcaKey = `${currentResultPeriod}_${pdcaKeyStr}`;
       const noteData = pdcaNotes[pdcaKey] || { good: '', bad: '', why: '' };
@@ -1223,91 +1225,63 @@
       document.getElementById('pdca-bad').value = noteData.bad || ''; 
       document.getElementById('pdca-why').value = noteData.why || '';
 
-
-      // --- 2. 勉強結果・偏差値・ランク・レベリングの集計 ---
-      const subjects = ['計画', '環境・設備', '法規', '構造', '施工', '模試'];
+      const subjects = ['計画', '環境・設備', '法規', '構造', '施工'];
       let subjectDevs = {};
       subjects.forEach(s => { subjectDevs[s] = []; });
 
+      let allDevsForOverall = [];
       testScores.forEach(t => {
         if(subjectDevs[t.subject]) {
           subjectDevs[t.subject].push(t.deviation);
         }
+        if(!isNaN(t.deviation)) {
+          allDevsForOverall.push(t.deviation);
+        }
       });
 
       let subjectAvgDevs = {};
-      let allDevs = [];
       subjects.forEach(s => {
         if(subjectDevs[s].length > 0) {
           const sum = subjectDevs[s].reduce((a,b)=>a+b, 0);
-          const avg = sum / subjectDevs[s].length;
-          subjectAvgDevs[s] = avg;
-          allDevs.push(avg);
+          subjectAvgDevs[s] = sum / subjectDevs[s].length;
         } else {
           subjectAvgDevs[s] = null;
         }
       });
 
       let overallAvgDev = null;
-      if(allDevs.length > 0) {
-        overallAvgDev = allDevs.reduce((a,b)=>a+b, 0) / allDevs.length;
+      if(allDevsForOverall.length > 0) {
+        overallAvgDev = allDevsForOverall.reduce((a,b)=>a+b, 0) / allDevsForOverall.length;
       }
 
       let totalTargetMins = 0, totalActualMins = 0;
       let subjMap = {}, contMap = {};
-      let barData = [];
-      let maxBarVal = 0;
 
-      if(currentResultPeriod !== 'year') {
-        targetDateStrs.forEach(dStr => {
-          let dayTarget = getDayTargetMins(dStr), dayActual = 0;
-          totalTargetMins += dayTarget;
-          let dayItems = {};
-          studyRecords.filter(r => r.date === dStr).forEach(r => {
-            dayActual += r.minutes; totalActualMins += r.minutes;
-            subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
-            const cKey = `${r.subject} - ${r.content}`;
-            contMap[cKey] = (contMap[cKey]||0) + r.minutes;
-            dayItems[r.subject] = (dayItems[r.subject]||0) + r.minutes;
-          });
-          let label = dStr.slice(8,10);
-          if(currentResultPeriod==='week') { const days=['日','月','火','水','木','金','土']; label=days[new Date(dStr).getDay()]; }
-          let bItems = Object.keys(dayItems).map(k => ({ subj: k, val: dayItems[k] }));
-          barData.push({ label, items: bItems, total: dayActual });
-          if(dayActual > maxBarVal) maxBarVal = dayActual;
+      targetDateStrs.forEach(dStr => {
+        let dayTarget = getDayTargetMins(dStr), dayActual = 0;
+        totalTargetMins += dayTarget;
+        studyRecords.filter(r => r.date === dStr).forEach(r => {
+          dayActual += r.minutes; totalActualMins += r.minutes;
+          subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
+          const cKey = `${r.subject} - ${r.content}`;
+          contMap[cKey] = (contMap[cKey]||0) + r.minutes;
         });
-      } else {
-        for(let m=1; m<=12; m++) {
-          let mTarget=0, mActual=0; let mItems={};
-          const mDates = getMonthWeeks(resultBaseDate.getFullYear(), m).filter(d=>d.getMonth()+1===m);
-          mDates.forEach(d => {
-            const dStr = formatDate(d); mTarget += getDayTargetMins(dStr);
-            studyRecords.filter(r=>r.date===dStr).forEach(r => {
-              mActual += r.minutes; totalActualMins += r.minutes;
-              subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
-              contMap[`${r.subject} - ${r.content}`] = (contMap[`${r.subject} - ${r.content}`]||0) + r.minutes;
-              mItems[r.subject] = (mItems[r.subject]||0) + r.minutes;
-            });
-          });
-          totalTargetMins += mTarget;
-          let bItems = Object.keys(mItems).map(k => ({ subj: k, val: mItems[k] }));
-          barData.push({ label: `${m}月`, items: bItems, total: mActual });
-          if(mActual > maxBarVal) maxBarVal = mActual;
-        }
-      }
+      });
 
       let totalCumulativeMins = studyRecords.reduce((acc, r) => acc + r.minutes, 0);
       let totalCumulativeHours = totalCumulativeMins / 60;
-      let currentLevel = Math.min(100, Math.floor(totalCumulativeHours / 15) + 1);
+      let currentLevel = calculateLevel(totalCumulativeHours);
 
-      // 全体平均ランク表示
+      // レベル表示ボックスの更新
+      document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel} (累計 ${totalCumulativeHours.toFixed(1)}時間)`;
+      document.getElementById('time-mode-value').innerText = formatTime(totalCumulativeMins);
+
       const overallRank = getRankInfoByDeviation(overallAvgDev);
       const shieldEl = document.getElementById('overall-rank-shield');
       shieldEl.style.backgroundPosition = overallRank.pos;
-      document.getElementById('overall-rank-name.innerText') = overallRank.name;
+      document.getElementById('overall-rank-name').innerText = overallRank.name;
       document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : 'テスト未入力';
 
-      // 各科目ランク表示 (各科目は全体シールドの1/4程度の面積、タップで詳細確認)
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       subjects.forEach(s => {
@@ -1315,9 +1289,9 @@
         const r = getRankInfoByDeviation(dev);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
-          <div style="font-size:10px; color:var(--text-sub); margin-bottom:2px;">${s}</div>
+          <div style="font-size:9px; color:var(--text-sub); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s}</div>
           <div class="rank-shield-sm" style="background-position: ${r.pos};"></div>
-          <div style="font-size:9px; font-weight:bold; color:${r.color};">${r.name}</div>
+          <div style="font-size:8px; font-weight:bold; color:${r.color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
@@ -1337,62 +1311,8 @@
         subjectsGrid.appendChild(card);
       });
 
-      // 勉強時間レベルボックスのタップ詳細
-      const timeModeLabel = document.getElementById('time-mode-label');
-      const timeModeValue = document.getElementById('time-mode-value');
-      if (timeDisplayMode === 0) {
-        timeModeLabel.innerText = '累計学習時間 (タップで切替)';
-        timeModeValue.innerText = formatTime(totalCumulativeMins);
-      } else if (timeDisplayMode === 1) {
-        timeModeLabel.innerText = 'レベリング (タップで切替)';
-        timeModeValue.innerText = `Lv. ${currentLevel} (累計 ${totalCumulativeHours.toFixed(1)}h)`;
-      } else {
-        timeModeLabel.innerText = `${currentResultPeriod === 'day' ? '本日' : currentResultPeriod === 'week' ? '今週' : currentResultPeriod === 'month' ? '今月' : '今年'}の学習時間 (タップで切替)`;
-        let periodActual = 0;
-        targetDateStrs.forEach(dStr => {
-          studyRecords.filter(r => r.date === dStr).forEach(r => periodActual += r.minutes);
-        });
-        timeModeValue.innerText = formatTime(periodActual);
-      }
-
-      // レベルボックス自体をタップしたときの詳細ポップアップ設定
-      document.getElementById('study-time-display-box').onclick = () => {
-        let html = `<div style="font-weight:bold; margin-bottom:8px;">【勉強時間・レベリング】詳細</div>`;
-        html += `<div style="background:#242428; padding:10px; border-radius:8px; margin-bottom:8px;">現在のレベル: <strong>Lv. ${currentLevel}</strong><br>累計学習時間: <strong>${formatTime(totalCumulativeMins)}</strong> (${totalCumulativeHours.toFixed(1)}時間)<br>※1500時間でLv.100</div>`;
-        html += `<div style="font-size:13px; color:var(--rank-gold); margin-bottom:4px;">勉強時間の積み上げ内訳:</div>`;
-        if(studyRecords.length > 0) {
-          const sorted = [...studyRecords].sort((a,b)=>b.id-a.id).slice(0, 10);
-          sorted.forEach(sr => {
-            html += `<div style="font-size:12px; color:var(--text-sub); border-bottom:1px solid #2c2c2e; padding:4px 0;">${sr.date} - ${sr.subject} (${sr.content}): ${sr.minutes}分</div>`;
-          });
-        } else {
-          html += `<div style="color:var(--text-sub);">勉強の記録がまだありません</div>`;
-        }
-        openSubjectDetailModal('勉強時間 & レベル詳細', html);
-      };
-
       let sRate = totalTargetMins > 0 ? Math.round((totalActualMins / totalTargetMins) * 100) : (totalActualMins > 0 ? 100 : 0);
       document.getElementById('res-study-rate-val').innerText = `${sRate}%`;
-
-      const chartEl = document.getElementById('res-study-bar-chart'); chartEl.innerHTML = '';
-      barData.forEach(d => {
-        const col = document.createElement('div'); col.className = 'bar-col';
-        const wrap = document.createElement('div'); wrap.className = 'bar-segment-wrapper';
-        let hPer = maxBarVal > 0 ? (d.total / maxBarVal) * 100 : 0;
-        wrap.style.height = `${hPer}%`;
-        
-        d.items.forEach(i => {
-          const seg = document.createElement('div'); seg.className = 'bar-segment';
-          seg.style.height = `${(i.val / d.total) * 100}%`;
-          seg.style.backgroundColor = getSubjectColor(i.subj);
-          wrap.appendChild(seg);
-        });
-        
-        col.appendChild(wrap);
-        const lbl = document.createElement('div'); lbl.className = 'bar-label'; lbl.innerText = d.label;
-        col.appendChild(lbl);
-        chartEl.appendChild(col);
-      });
 
       const dEl = document.getElementById('res-study-detail-stats'); dEl.innerHTML = '';
       if(Object.keys(subjMap).length === 0) dEl.innerHTML = '<div style="color:var(--text-sub); text-align:center;">データなし</div>';
@@ -1410,6 +1330,101 @@
       }
     }
 
+    window.renderPopupChart = function(mode) {
+      ['day', 'week', 'month'].forEach(m => {
+        const btn = document.getElementById(`pop-btn-${m}`);
+        if(btn) {
+          btn.style.background = m === mode ? '#0a84ff' : '#2c2c2e';
+        }
+      });
+
+      const container = document.getElementById('popup-chart-container');
+      if(!container) return;
+      container.innerHTML = '';
+
+      let barData = [];
+      let maxVal = 0;
+
+      if(mode === 'day') {
+        for(let i=6; i>=0; i--) {
+          const d = new Date(todayDateObj); d.setDate(d.getDate() - i);
+          const dStr = formatDate(d);
+          let dayTotal = 0;
+          let dayItems = {};
+          studyRecords.filter(r => r.date === dStr).forEach(r => {
+            dayTotal += r.minutes;
+            dayItems[r.subject] = (dayItems[r.subject]||0) + r.minutes;
+          });
+          const label = `${d.getMonth()+1}/${d.getDate()}`;
+          let bItems = Object.keys(dayItems).map(k => ({ subj: k, val: dayItems[k] }));
+          barData.push({ label, items: bItems, total: dayTotal });
+          if(dayTotal > maxVal) maxVal = dayTotal;
+        }
+      } else if(mode === 'week') {
+        for(let w=3; w>=0; w--) {
+          const wEnd = new Date(todayDateObj); wEnd.setDate(wEnd.getDate() - (w * 7));
+          const wDates = getWeekRange(wEnd);
+          let wTotal = 0;
+          let wItems = {};
+          wDates.forEach(wd => {
+            const wdStr = formatDate(wd);
+            studyRecords.filter(r => r.date === wdStr).forEach(r => {
+              wTotal += r.minutes;
+              wItems[r.subject] = (wItems[r.subject]||0) + r.minutes;
+            });
+          });
+          const label = `${3-w+1}週前`;
+          let bItems = Object.keys(wItems).map(k => ({ subj: k, val: wItems[k] }));
+          barData.push({ label, items: bItems, total: wTotal });
+          if(wTotal > maxVal) maxVal = wTotal;
+        }
+      } else if(mode === 'month') {
+        for(let m=5; m>=0; m--) {
+          const targetM = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth() - m, 1);
+          const y = targetM.getFullYear(); const monthNum = targetM.getMonth() + 1;
+          const mDates = getMonthWeeks(y, monthNum);
+          let mTotal = 0;
+          let mItems = {};
+          mDates.forEach(md => {
+            const mdStr = formatDate(md);
+            studyRecords.filter(r => r.date === mdStr).forEach(r => {
+              mTotal += r.minutes;
+              mItems[r.subject] = (mItems[r.subject]||0) + r.minutes;
+            });
+          });
+          const label = `${monthNum}月`;
+          let bItems = Object.keys(mItems).map(k => ({ subj: k, val: mItems[k] }));
+          barData.push({ label, items: bItems, total: mTotal });
+          if(mTotal > maxVal) maxVal = mTotal;
+        }
+      }
+
+      const chartDiv = document.createElement('div');
+      chartDiv.className = 'bar-chart-container';
+      chartDiv.style.height = '150px';
+
+      barData.forEach(d => {
+        const col = document.createElement('div'); col.className = 'bar-col';
+        const wrap = document.createElement('div'); wrap.className = 'bar-segment-wrapper';
+        let hPer = maxVal > 0 ? (d.total / maxVal) * 100 : 0;
+        wrap.style.height = `${hPer}%`;
+        
+        d.items.forEach(i => {
+          const seg = document.createElement('div'); seg.className = 'bar-segment';
+          seg.style.height = `${(i.val / d.total) * 100}%`;
+          seg.style.backgroundColor = getSubjectColor(i.subj);
+          wrap.appendChild(seg);
+        });
+        
+        col.appendChild(wrap);
+        const lbl = document.createElement('div'); lbl.className = 'bar-label'; lbl.innerText = d.label;
+        col.appendChild(lbl);
+        chartDiv.appendChild(col);
+      });
+
+      container.appendChild(chartDiv);
+    }
+
     function savePdcaNote() {
       let pdcaKeyStr = currentResultPeriod === 'day' ? formatDate(resultBaseDate) : currentResultPeriod === 'week' ? formatDate(getWeekRange(resultBaseDate)[0]) : currentResultPeriod === 'month' ? `${resultBaseDate.getFullYear()}-${String(resultBaseDate.getMonth()+1).padStart(2,'0')}` : `${resultBaseDate.getFullYear()}`;
       const pdcaKey = `${currentResultPeriod}_${pdcaKeyStr}`;
@@ -1417,7 +1432,6 @@
       localStorage.setItem('tokusei_pdca', JSON.stringify(pdcaNotes)); showToast('PDCAノートを保存しました');
     }
 
-    // --- カレンダー ---
     let currentCalYear = todayDateObj.getFullYear();
     let currentCalMonth = todayDateObj.getMonth() + 1;
 
@@ -1500,7 +1514,6 @@
         const itemEl = document.createElement('div');
         itemEl.className = 'history-item';
         const isPlus = item.type !== 'spend';
-        const valClass = isPlus ? 'plus' : 'minus';
         const valPrefix = isPlus ? '+' : '-';
         itemEl.innerHTML = `
           <div>
@@ -1553,7 +1566,6 @@
       showToast('記録しました');
     }
 
-    // 自動リロードと通知ループ
     setInterval(() => {
       if(formatDate(getLogicalDate()) !== localStorage.getItem('tokusei_tasks_date')) return location.reload();
       let changed=false; const now=getCurrentLogicalMinutes(); const ok=('Notification' in window)&&(Notification.permission==='granted');
