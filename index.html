@@ -74,9 +74,9 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* クロップ用コンテナ */
-    .rank-shield-lg { width: 100px; height: 100px; margin: 0 auto 10px auto; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative; background: #111; }
-    .rank-shield-sm { width: 45px; height: 45px; margin: 0 auto 4px auto; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); position: relative; background: #111; }
+    /* 透過PNG用：背景や余計な枠をなくし、綺麗にスプライト表示するスタイル */
+    .rank-shield-lg { width: 100px; height: 100px; margin: 0 auto 10px auto; position: relative; overflow: hidden; }
+    .rank-shield-sm { width: 45px; height: 45px; margin: 0 auto 4px auto; position: relative; overflow: hidden; }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     .subjects-rank-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 16px; }
@@ -202,9 +202,9 @@
         </div>
 
         <div style="font-size:12px; color:var(--text-sub); margin-bottom:6px;">全体平均ランク</div>
-        <!-- 確実に表示させるため相対パスを指定 -->
+        <!-- 透過PNGファイルを指定 -->
         <div class="rank-shield-lg" id="overall-rank-shield">
-          <img src="./S__42205194_3.jpg" id="overall-rank-img" style="width: 400%; height: 200%; object-fit: none;" alt="Rank">
+          <img src="./ランクマーク.png" id="overall-rank-img" style="position: absolute; width: 400%; height: 200%; object-fit: none;" alt="Rank">
         </div>
         <div id="overall-rank-name" style="font-size:18px; font-weight:bold; color:var(--rank-gold);">未判定</div>
         <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
@@ -456,20 +456,19 @@
 </div>
 
   <script>
-    // --- 正確なランク区分とグリッド位置 (col, row) ---
+    // --- ランク区分とスプライト座標 ---
     function getRankInfoByDeviation(dev) {
       if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', col: 0, row: 0, color: '#8e8e93' };
-      if (dev < 40) return { name: 'ブロンズ', col: 0, row: 0, color: '#cd7f32' };        // 40未満
-      if (dev < 45) return { name: 'シルバー', col: 1, row: 0, color: '#c0c0c0' };    // 40〜45
-      if (dev < 50) return { name: 'ゴールド', col: 2, row: 0, color: '#ffd700' };    // 45〜50
-      if (dev < 55) return { name: 'プラチナ', col: 3, row: 0, color: '#00e5ff' };    // 50〜55
-      if (dev < 60) return { name: 'エメラルド', col: 0, row: 1, color: '#30d158' };  // 55〜60
-      if (dev < 65) return { name: 'ダイヤモンド', col: 1, row: 1, color: '#0a84ff' }; // 60〜65
-      if (dev <= 67) return { name: 'マスター', col: 2, row: 1, color: '#bf5af2' };    // 65〜67
-      return { name: 'チャレンジャー', col: 3, row: 1, color: '#ff9f0a' };          // 68以上
+      if (dev < 40) return { name: 'ブロンズ', col: 0, row: 0, color: '#cd7f32' };
+      if (dev < 45) return { name: 'シルバー', col: 1, row: 0, color: '#c0c0c0' };
+      if (dev < 50) return { name: 'ゴールド', col: 2, row: 0, color: '#ffd700' };
+      if (dev < 55) return { name: 'プラチナ', col: 3, row: 0, color: '#00e5ff' };
+      if (dev < 60) return { name: 'エメラルド', col: 0, row: 1, color: '#30d158' };
+      if (dev < 65) return { name: 'ダイヤモンド', col: 1, row: 1, color: '#0a84ff' };
+      if (dev <= 67) return { name: 'マスター', col: 2, row: 1, color: '#bf5af2' };
+      return { name: 'チャレンジャー', col: 3, row: 1, color: '#ff9f0a' };
     }
 
-    // --- レベル計算ロジック（1500時間で100Lv、Lv.1に約10時間、高レベルほど上がりにくい勾配） ---
     function calculateLevel(totalHours) {
       if (totalHours <= 0) return 1;
       const discriminant = 10.05 * 10.05 - 4 * 0.0505 * (-totalHours);
@@ -477,7 +476,6 @@
       return Math.max(1, Math.min(100, Math.floor(level)));
     }
 
-    // --- 共通ユーティリティ（午前5時切り替え） ---
     function getTimeValue(timeStr) { if (!timeStr) return 99999; const m = String(timeStr).match(/(\d{1,2}):(\d{2})/); if (m) return parseInt(m[1],10)*60 + parseInt(m[2],10); return 99999; }
     function getLogicalMinutes(timeStr) { let m = getTimeValue(timeStr); if (m < 5*60) m += 24*60; return m; }
     function getCurrentLogicalMinutes() { const d = new Date(); let m = d.getHours()*60 + d.getMinutes(); if (m < 5*60) m += 24*60; return m; }
@@ -487,7 +485,6 @@
     const todayDateObj = getLogicalDate();
     const todayStr = formatDate(todayDateObj);
 
-    // --- データ初期化 ---
     const defaultTemplates = {
       weekday: [ { id: 1, name: '起床', time: '06:00', toku: 20, completed: false }, { id: 2, name: '仕事', time: '08:30', toku: 20, completed: false } ],
       weekend: [ { id: 1, name: '起床', time: '07:00', toku: 15, completed: false } ],
@@ -525,7 +522,6 @@
     let currentResultPeriod = 'day';
     let resultBaseDate = new Date(todayDateObj);
 
-    // --- 勉強機能データ ---
     let studyPlans = JSON.parse(localStorage.getItem('tokusei_study_plans')) || [];
     let studyRecords = JSON.parse(localStorage.getItem('tokusei_study_records')) || [];
     let testScores = JSON.parse(localStorage.getItem('tokusei_test_scores')) || [];
@@ -560,7 +556,6 @@
       if (tabName === 'study') renderStudyView();
     }
 
-    // --- 今日の任務 ---
     function updateUI() {
       const currentLogical = formatDate(getLogicalDate());
       if (currentLogical !== localStorage.getItem('tokusei_tasks_date')) {
@@ -1268,15 +1263,15 @@
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel} (累計 ${totalCumulativeHours.toFixed(1)}時間)`;
       document.getElementById('time-mode-value').innerText = formatTime(totalCumulativeMins);
 
-      // 全体平均ランク画像の更新 (相対パス imgクロップ方式)
+      // 全体平均ランク画像の更新 (スプライト座標設定)
       const overallRank = getRankInfoByDeviation(overallAvgDev);
       const imgEl = document.getElementById('overall-rank-img');
-      imgEl.style.marginLeft = `-${overallRank.col * 100}%`;
-      imgEl.style.marginTop = `-${overallRank.row * 100}%`;
+      imgEl.style.left = `-${overallRank.col * 100}%`;
+      imgEl.style.top = `-${overallRank.row * 100}%`;
       document.getElementById('overall-rank-name').innerText = overallRank.name;
       document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : 'テスト未入力';
 
-      // 科目別ランク画像の更新 (相対パス imgクロップ方式)
+      // 科目別ランク画像の更新
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       subjects.forEach(s => {
@@ -1286,7 +1281,7 @@
         card.innerHTML = `
           <div style="font-size:9px; color:var(--text-sub); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s}</div>
           <div class="rank-shield-sm">
-            <img src="./S__42205194_3.jpg" style="width: 400%; height: 200%; object-fit: none; margin-left: -${r.col * 100}%; margin-top: -${r.row * 100}%;" alt="${r.name}">
+            <img src="./ランクマーク.png" style="position: absolute; width: 400%; height: 200%; object-fit: none; left: -${r.col * 100}%; top: -${r.row * 100}%;" alt="${r.name}">
           </div>
           <div style="font-size:8px; font-weight:bold; color:${r.color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</div>
         `;
