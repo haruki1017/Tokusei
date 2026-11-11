@@ -74,8 +74,8 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* 各ランク画像を独立して綺麗に大きくカッコよく表示 */
-    .rank-shield-lg { width: 110px; height: 110px; margin: 0 auto 6px auto; display: flex; align-items: center; justify-content: center; }
+    /* 全体ランクマークの拡大（縦横110px→200pxに拡大＝面積にして約3.3倍〜4倍） */
+    .rank-shield-lg { width: 200px; height: 200px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; }
     .rank-shield-lg img { width: 100%; height: 100%; object-fit: contain; }
 
     .rank-shield-sm { width: 44px; height: 44px; margin: 0 auto 2px auto; display: flex; align-items: center; justify-content: center; }
@@ -143,7 +143,7 @@
       <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
       <div class="drawer-item" onclick="toggleDrawer(false); openTestScoreModal();">📝 予備校テスト偏差値入力</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.8');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.9');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -205,12 +205,12 @@
           <div style="font-size:24px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1</div>
         </div>
 
-        <!-- 全体ランクマーク (独立ファイル参照) -->
+        <!-- 全体ランクマーク (面積約3.5倍に大迫力拡大) -->
         <div class="rank-shield-lg" id="overall-rank-shield">
           <img src="1.png" id="overall-rank-img" alt="Rank">
         </div>
-        <div id="overall-rank-name-text" style="font-size:12px; font-weight:bold; color:var(--rank-gold); margin-top:3px;">-</div>
-        <div id="overall-dev-text" style="font-size:11px; color:var(--text-sub); margin-top:1px;">平均偏差値: -</div>
+        <div id="overall-rank-name-text" style="font-size:14px; font-weight:bold; color:var(--rank-gold); margin-top:4px;">-</div>
+        <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
 
         <!-- 各科目＆勉強時間グリッド (3列×2行: 計画, 環境設備, 法規, 構造, 施工, 勉強時間) -->
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
@@ -1312,13 +1312,13 @@
         subjectsGrid.appendChild(card);
       });
 
-      // 6枠目の「勉強時間」カード (n:nn形式で大きく表示、余計なアイコンは不要)
+      // 6枠目の「勉強時間」カード (n:nn形式で大きく表示・文字サイズを視認性重視でさらに拡大)
       const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
       timeCard.style.cursor = 'pointer';
       timeCard.innerHTML = `
         <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">勉強時間</div>
         <div style="width:44px; height:44px; margin:0 auto 2px auto; background:transparent; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size:15px; font-weight:bold; color:var(--rank-gold); text-align:center; line-height:1.1;">${formatTime(totalCumulativeMins)}</span>
+          <span style="font-size:18px; font-weight:900; color:var(--rank-gold); text-align:center; line-height:1.1; letter-spacing:-0.5px;">${formatTime(totalCumulativeMins)}</span>
         </div>
         <div style="font-size:10px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">累計</div>
         <div style="font-size:9px; color:var(--text-sub);">詳細確認</div>
