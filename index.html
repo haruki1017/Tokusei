@@ -74,13 +74,18 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* ランクマーク拡大表示用スタイル */
-    .rank-shield-lg { width: 140px; height: 140px; margin: 0 auto 8px auto; position: relative; overflow: hidden; }
-    .rank-shield-sm { width: 64px; height: 64px; margin: 0 auto 4px auto; position: relative; overflow: hidden; }
+    /* スプライトランクマーク設定 (4列×2行: 横幅400%, 高さ200%) */
+    .rank-shield-lg { width: 160px; height: 160px; margin: 0 auto 6px auto; position: relative; overflow: hidden; border-radius: 16px; background: #161618; border: 1px solid var(--card-border); }
+    .rank-shield-lg img { position: absolute; width: 400%; height: 200%; object-fit: none; }
+
+    .rank-shield-sm { width: 75px; height: 75px; margin: 0 auto 4px auto; position: relative; overflow: hidden; border-radius: 10px; background: #161618; border: 1px solid var(--card-border); }
+    .rank-shield-sm img { position: absolute; width: 400%; height: 200%; object-fit: none; }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
-    .subjects-rank-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 16px; }
-    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 2px; text-align: center; cursor: pointer; }
+    
+    /* 2列×3行のレイアウト (計画/環境・設備、法規/構造、施工/勉強時間) */
+    .subjects-rank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     
     .pdca-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; }
     .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-gold); margin-bottom: 12px; }
@@ -138,7 +143,7 @@
       <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
       <div class="drawer-item" onclick="toggleDrawer(false); openTestScoreModal();">📝 予備校テスト偏差値入力</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.5');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.3.6');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -196,22 +201,19 @@
     <div id="res-sub-study" class="res-sub-view">
       <div class="study-result-hero">
         <!-- レベルのみを大きく表示 -->
-        <div id="hero-level-box" style="margin-bottom:14px; cursor:pointer;" onclick="openLevelDetailModal()">
-          <div style="font-size:28px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1</div>
+        <div id="hero-level-box" style="margin-bottom:12px; cursor:pointer;" onclick="openLevelDetailModal()">
+          <div style="font-size:26px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1</div>
         </div>
 
-        <!-- 全体ランクマーク (さらに大きく、平均偏差値のみ) -->
+        <!-- 全体ランクマーク (大きく表示し、その下にランク名を小さく表示) -->
         <div class="rank-shield-lg" id="overall-rank-shield">
-          <img src="./ランクマーク.png" id="overall-rank-img" style="position: absolute; width: 400%; height: 200%; object-fit: none;" alt="Rank">
+          <img src="./ランクマーク.png" id="overall-rank-img" alt="Rank">
         </div>
-        <div id="overall-dev-text" style="font-size:14px; font-weight:bold; color:var(--text-sub); margin-top:4px;">平均偏差値: -</div>
+        <div id="overall-rank-name-text" style="font-size:13px; font-weight:bold; color:var(--rank-gold); margin-top:4px;">-</div>
+        <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
 
+        <!-- 各科目＆勉強時間グリッド (2列×3行: 計画, 環境・設備, 法規, 構造, 施工, 勉強時間) -->
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
-
-        <div id="study-time-display-box" style="margin-top:16px; padding:10px; background:#242428; border-radius:10px; cursor:pointer;" onclick="openLevelDetailModal()">
-          <div style="font-size:11px; color:var(--text-sub);">累計学習時間 (タップでグラフ詳細)</div>
-          <div style="font-size:18px; font-weight:bold; color:var(--rank-gold);" id="time-mode-value">0時間0分</div>
-        </div>
       </div>
 
       <div class="main-summary-box">
@@ -453,7 +455,7 @@
 </div>
 
   <script>
-    // --- ランク区分とスプライト座標 ---
+    // --- スプライト用正確な座標マップ (列0~3, 行0~1) ---
     function getRankInfoByDeviation(dev) {
       if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', col: 0, row: 0, color: '#8e8e93' };
       if (dev < 40) return { name: 'ブロンズ', col: 0, row: 0, color: '#cd7f32' };
@@ -1258,28 +1260,32 @@
       let currentLevel = calculateLevel(totalCumulativeHours);
 
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
-      document.getElementById('time-mode-value').innerText = formatTime(totalCumulativeMins);
 
-      // 全体ランクマーク (平均偏差値のみ)
+      // 全体ランクマーク (スプライト座標：col*100%, row*100% を正確に反映)
       const overallRank = getRankInfoByDeviation(overallAvgDev);
       const imgEl = document.getElementById('overall-rank-img');
       imgEl.style.left = `-${overallRank.col * 100}%`;
       imgEl.style.top = `-${overallRank.row * 100}%`;
+      document.getElementById('overall-rank-name-text0' /* safe */);
+      document.getElementById('overall-rank-name-text').innerText = overallRank.name;
+      document.getElementById('overall-rank-name-text').style.color = overallRank.color;
       document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : '平均偏差値: -';
 
-      // 各科目ランクマークの更新 (大きく表示)
+      // 各科目ランクマーク＆勉強時間のレイアウト更新 (2列×3行: 計画/環境・設備、法規/構造、施工/勉強時間)
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
+      
       subjects.forEach(s => {
         const dev = subjectAvgDevs[s];
         const r = getRankInfoByDeviation(dev);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
-          <div style="font-size:10px; color:var(--text-sub); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s}</div>
+          <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:4px;">${s}</div>
           <div class="rank-shield-sm">
-            <img src="./ランクマーク.png" style="position: absolute; width: 400%; height: 200%; object-fit: none; left: -${r.col * 100}%; top: -${r.row * 100}%;" alt="${r.name}">
+            <img src="./ランクマーク.png" style="left: -${r.col * 100}%; top: -${r.row * 100}%;" alt="${r.name}">
           </div>
-          <div style="font-size:9px; font-weight:bold; color:${r.color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</div>
+          <div style="font-size:11px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
+          <div style="font-size:10px; color:var(--text-sub); margin-top:1px;">平均偏差値: ${dev !== null ? dev.toFixed(1) : '-'}</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
@@ -1307,6 +1313,20 @@
         });
         subjectsGrid.appendChild(card);
       });
+
+      // 6枠目の「勉強時間」カード
+      const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
+      timeCard.style.cursor = 'pointer';
+      timeCard.innerHTML = `
+        <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:4px;">勉強時間</div>
+        <div style="width:75px; height:75px; margin:0 auto 4px auto; background:#161618; border:1px solid var(--card-border); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+          <span style="font-size:22px;">⏱️</span>
+        </div>
+        <div style="font-size:11px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">${formatTime(totalCumulativeMins)}</div>
+        <div style="font-size:10px; color:var(--text-sub); margin-top:1px;">累計詳細 (タップ)</div>
+      `;
+      timeCard.addEventListener('click', () => { openLevelDetailModal(); });
+      subjectsGrid.appendChild(timeCard);
 
       let sRate = totalTargetMins > 0 ? Math.round((totalActualMins / totalTargetMins) * 100) : (totalActualMins > 0 ? 100 : 0);
       document.getElementById('res-study-rate-val').innerText = `${sRate}%`;
@@ -1400,7 +1420,6 @@
         }
       }
 
-      // グラフの凡例（色ごとの科目名）を表示
       if(usedSubjects.size > 0) {
         let legendHtml = `<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:10px; font-size:11px;">`;
         usedSubjects.forEach(subj => {
