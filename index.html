@@ -74,13 +74,13 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* 透過PNG用：背景や余計な枠をなくし、綺麗にスプライト表示するスタイル */
-    .rank-shield-lg { width: 100px; height: 100px; margin: 0 auto 10px auto; position: relative; overflow: hidden; }
-    .rank-shield-sm { width: 45px; height: 45px; margin: 0 auto 4px auto; position: relative; overflow: hidden; }
+    /* ランクマーク拡大表示用スタイル */
+    .rank-shield-lg { width: 140px; height: 140px; margin: 0 auto 8px auto; position: relative; overflow: hidden; }
+    .rank-shield-sm { width: 64px; height: 64px; margin: 0 auto 4px auto; position: relative; overflow: hidden; }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     .subjects-rank-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 16px; }
-    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 2px; text-align: center; cursor: pointer; }
+    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 2px; text-align: center; cursor: pointer; }
     
     .pdca-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; }
     .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-gold); margin-bottom: 12px; }
@@ -195,19 +195,16 @@
     <!-- 【勉強結果サブビュー】 -->
     <div id="res-sub-study" class="res-sub-view">
       <div class="study-result-hero">
-        <!-- レベリング表示 -->
-        <div id="hero-level-box" style="background:#242428; border:1px solid var(--card-border); border-radius:10px; padding:10px 14px; margin-bottom:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="openLevelDetailModal()">
-          <div style="font-size:13px; color:var(--text-sub);">レベリング</div>
-          <div style="font-size:16px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1 (累計 0.0時間)</div>
+        <!-- レベルのみを大きく表示 -->
+        <div id="hero-level-box" style="margin-bottom:14px; cursor:pointer;" onclick="openLevelDetailModal()">
+          <div style="font-size:28px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1</div>
         </div>
 
-        <div style="font-size:12px; color:var(--text-sub); margin-bottom:6px;">全体平均ランク</div>
-        <!-- 透過PNGファイルを指定 -->
+        <!-- 全体ランクマーク (さらに大きく、平均偏差値のみ) -->
         <div class="rank-shield-lg" id="overall-rank-shield">
           <img src="./ランクマーク.png" id="overall-rank-img" style="position: absolute; width: 400%; height: 200%; object-fit: none;" alt="Rank">
         </div>
-        <div id="overall-rank-name" style="font-size:18px; font-weight:bold; color:var(--rank-gold);">未判定</div>
-        <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
+        <div id="overall-dev-text" style="font-size:14px; font-weight:bold; color:var(--text-sub); margin-top:4px;">平均偏差値: -</div>
 
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
 
@@ -1074,9 +1071,9 @@
       const totalHours = totalCumulativeMins / 60;
       const currentLevel = calculateLevel(totalHours);
 
-      let html = `<div style="font-weight:bold; margin-bottom:8px; text-align:center;">📊 レベリング & 積み上げ学習時間</div>`;
+      let html = `<div style="font-weight:bold; margin-bottom:8px; text-align:center;">📊 レベル & 積み上げ学習時間</div>`;
       html += `<div style="background:#242428; padding:12px; border-radius:10px; margin-bottom:12px; text-align:center;">
-                <div style="font-size:18px; font-weight:bold; color:var(--rank-gold); margin-bottom:4px;">Lv. ${currentLevel}</div>
+                <div style="font-size:22px; font-weight:bold; color:var(--rank-gold); margin-bottom:4px;">Lv. ${currentLevel}</div>
                 <div style="font-size:13px; color:var(--text-sub);">累計学習時間: <strong>${formatTime(totalCumulativeMins)}</strong> (${totalHours.toFixed(1)}時間)<br>※1500時間でLv.100</div>
                </div>`;
       html += `<div style="display:flex; justify-content:center; gap:6px; margin-bottom:12px;">
@@ -1086,7 +1083,7 @@
                </div>`;
       html += `<div id="popup-chart-container" style="min-height:160px;"></div>`;
       
-      openSubjectDetailModal('レベリング & 学習グラフ', html);
+      openSubjectDetailModal('レベル & 学習グラフ', html);
       renderPopupChart('day');
     }
 
@@ -1260,18 +1257,17 @@
       let totalCumulativeHours = totalCumulativeMins / 60;
       let currentLevel = calculateLevel(totalCumulativeHours);
 
-      document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel} (累計 ${totalCumulativeHours.toFixed(1)}時間)`;
+      document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
       document.getElementById('time-mode-value').innerText = formatTime(totalCumulativeMins);
 
-      // 全体平均ランク画像の更新 (スプライト座標設定)
+      // 全体ランクマーク (平均偏差値のみ)
       const overallRank = getRankInfoByDeviation(overallAvgDev);
       const imgEl = document.getElementById('overall-rank-img');
       imgEl.style.left = `-${overallRank.col * 100}%`;
       imgEl.style.top = `-${overallRank.row * 100}%`;
-      document.getElementById('overall-rank-name').innerText = overallRank.name;
-      document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : 'テスト未入力';
+      document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : '平均偏差値: -';
 
-      // 科目別ランク画像の更新
+      // 各科目ランクマークの更新 (大きく表示)
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       subjects.forEach(s => {
@@ -1279,14 +1275,23 @@
         const r = getRankInfoByDeviation(dev);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
-          <div style="font-size:9px; color:var(--text-sub); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s}</div>
+          <div style="font-size:10px; color:var(--text-sub); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s}</div>
           <div class="rank-shield-sm">
             <img src="./ランクマーク.png" style="position: absolute; width: 400%; height: 200%; object-fit: none; left: -${r.col * 100}%; top: -${r.row * 100}%;" alt="${r.name}">
           </div>
-          <div style="font-size:8px; font-weight:bold; color:${r.color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</div>
+          <div style="font-size:9px; font-weight:bold; color:${r.color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.name}</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
+          if(dev !== null) {
+            html += `<div style="background:#242428; padding:10px; border-radius:8px; margin-bottom:10px; text-align:center;">
+                      <div style="font-size:13px; color:var(--text-sub);">科目平均偏差値</div>
+                      <div style="font-size:18px; font-weight:bold; color:${r.color};">${dev.toFixed(1)} (${r.name})</div>
+                     </div>`;
+          } else {
+            html += `<div style="color:var(--text-sub); margin-bottom:10px; text-align:center;">科目平均偏差値: 記録なし</div>`;
+          }
+
           const sTests = testScores.filter(t => t.subject === s);
           if(sTests.length > 0) {
             html += `<div style="margin-bottom:6px; font-size:13px; color:var(--rank-gold);">テスト結果履歴:</div>`;
@@ -1336,6 +1341,7 @@
 
       let barData = [];
       let maxVal = 0;
+      let usedSubjects = new Set();
 
       if(mode === 'day') {
         for(let i=6; i>=0; i--) {
@@ -1346,6 +1352,7 @@
           studyRecords.filter(r => r.date === dStr).forEach(r => {
             dayTotal += r.minutes;
             dayItems[r.subject] = (dayItems[r.subject]||0) + r.minutes;
+            usedSubjects.add(r.subject);
           });
           const label = `${d.getMonth()+1}/${d.getDate()}`;
           let bItems = Object.keys(dayItems).map(k => ({ subj: k, val: dayItems[k] }));
@@ -1363,6 +1370,7 @@
             studyRecords.filter(r => r.date === wdStr).forEach(r => {
               wTotal += r.minutes;
               wItems[r.subject] = (wItems[r.subject]||0) + r.minutes;
+              usedSubjects.add(r.subject);
             });
           });
           const label = `${3-w+1}週前`;
@@ -1382,6 +1390,7 @@
             studyRecords.filter(r => r.date === mdStr).forEach(r => {
               mTotal += r.minutes;
               mItems[r.subject] = (mItems[r.subject]||0) + r.minutes;
+              usedSubjects.add(r.subject);
             });
           });
           const label = `${monthNum}月`;
@@ -1389,6 +1398,16 @@
           barData.push({ label, items: bItems, total: mTotal });
           if(mTotal > maxVal) maxVal = mTotal;
         }
+      }
+
+      // グラフの凡例（色ごとの科目名）を表示
+      if(usedSubjects.size > 0) {
+        let legendHtml = `<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:10px; font-size:11px;">`;
+        usedSubjects.forEach(subj => {
+          legendHtml += `<div style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background-color:${getSubjectColor(subj)}; border-radius:2px; display:inline-block;"></span><span style="color:var(--text-sub);">${subj}</span></div>`;
+        });
+        legendHtml += `</div>`;
+        container.innerHTML += legendHtml;
       }
 
       const chartDiv = document.createElement('div');
