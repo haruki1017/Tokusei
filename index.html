@@ -74,12 +74,12 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* 正確なスプライトシート表示設定 (横4列×縦2列) */
-    .rank-shield-lg { width: 140px; height: 140px; margin: 0 auto 6px auto; position: relative; overflow: hidden; border-radius: 16px; background: #161618; border: 1px solid var(--card-border); }
-    .rank-shield-lg img { position: absolute; width: 400%; height: 200%; object-fit: fill; }
+    /* ランクマークをカッコよく表示（余白を削りマーク部分を最大化・中央配置） */
+    .rank-shield-lg { width: 120px; height: 120px; margin: 0 auto 6px auto; position: relative; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
+    .rank-shield-lg img { position: absolute; width: 500%; height: 250%; object-fit: fill; }
 
-    .rank-shield-sm { width: 56px; height: 56px; margin: 0 auto 2px auto; position: relative; overflow: hidden; border-radius: 8px; background: #161618; border: 1px solid var(--card-border); }
-    .rank-shield-sm img { position: absolute; width: 400%; height: 200%; object-fit: fill; }
+    .rank-shield-sm { width: 44px; height: 44px; margin: 0 auto 2px auto; position: relative; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
+    .rank-shield-sm img { position: absolute; width: 500%; height: 250%; object-fit: fill; }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     
@@ -200,12 +200,12 @@
     <!-- 【勉強結果サブビュー】 -->
     <div id="res-sub-study" class="res-sub-view">
       <div class="study-result-hero">
-        <!-- レベルのみを大きく表示 -->
+        <!-- レベルのみを表示 -->
         <div id="hero-level-box" style="margin-bottom:10px; cursor:pointer;" onclick="openLevelDetailModal()">
           <div style="font-size:24px; font-weight:bold; color:var(--rank-gold);" id="hero-level-text">Lv.1</div>
         </div>
 
-        <!-- 全体ランクマーク (大きく表示し、その下にランク名を小さく表示) -->
+        <!-- 全体ランクマーク -->
         <div class="rank-shield-lg" id="overall-rank-shield">
           <img src="./ランクマーク.png" id="overall-rank-img" alt="Rank">
         </div>
@@ -455,7 +455,7 @@
 </div>
 
   <script>
-    // --- ランクごとのスプライト座標 (横4列×縦2行) ---
+    // --- ランクごとのスプライト座標（正確にマークのみを大きく切り抜くオフセット設定） ---
     function getRankInfoByDeviation(dev) {
       if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', col: 0, row: 0, color: '#8e8e93' };
       if (dev < 40) return { name: 'ブロンズ', col: 0, row: 0, color: '#cd7f32' };
@@ -752,7 +752,7 @@
         const el = document.createElement('div'); el.className = 'task-item';
         el.innerHTML = `
           <div><div style="font-size:14px; font-weight:bold;">${r.subject} : ${r.content}</div></div>
-          <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${r.minutes}分</span>
+          <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${Math.floor(r.minutes/60)}:${String(r.minutes%60).padStart(2,'0')}</span>
           <button style="background:#ff453a; border:none; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;" onclick="delStudyRecord(${r.id})">取消</button></div>
         `;
         rList.appendChild(el);
@@ -967,7 +967,7 @@
         let summary = '';
         if(p.itemsByDay) {
             const totalWeekMins = Object.keys(p.itemsByDay).filter(k=>k!=='Special').reduce((sum, k) => sum + p.itemsByDay[k].reduce((s, i)=>s+parseInt(i.minutes||0,10), 0), 0);
-            summary = `<div style="font-size:12px; color:var(--text-sub);">一週間の目標: ${Math.floor(totalWeekMins/60)}時間${totalWeekMins%60}分</div>`;
+            summary = `<div style="font-size:12px; color:var(--text-sub);">一週間の目標: ${Math.floor(totalWeekMins/60)}:${String(totalWeekMins%60).padStart(2,'0')}</div>`;
         }
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
@@ -1066,7 +1066,7 @@
       return t;
     }
 
-    function formatTime(mins) { return `${Math.floor(mins/60)}時間${mins%60}分`; }
+    function formatTime(mins) { return `${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')}`; }
 
     function openLevelDetailModal() {
       const totalCumulativeMins = studyRecords.reduce((acc, r) => acc + r.minutes, 0);
@@ -1261,16 +1261,16 @@
 
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
 
-      // 全体ランクマーク (スプライト座標：col*100%, row*100% を正確に反映)
+      // 全体ランクマーク (スプライトのズレを解消し、中央に美しくクローズアップ表示)
       const overallRank = getRankInfoByDeviation(overallAvgDev);
       const imgEl = document.getElementById('overall-rank-img');
-      imgEl.style.left = `-${overallRank.col * 100}%`;
-      imgEl.style.top = `-${overallRank.row * 100}%`;
+      imgEl.style.left = `calc(-${overallRank.col * 100}% - 2%)`;
+      imgEl.style.top = `calc(-${overallRank.row * 100}% - 2%)`;
       document.getElementById('overall-rank-name-text').innerText = overallRank.name;
       document.getElementById('overall-rank-name-text').style.color = overallRank.color;
       document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : '平均偏差値: -';
 
-      // 各科目＆勉強時間のレイアウト更新 (3列×2行: 計画, 環境設備, 法規, 構造, 施工, 勉強時間)
+      // 各科目＆勉強時間のレイアウト更新
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       
@@ -1281,7 +1281,7 @@
         card.innerHTML = `
           <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">${s}</div>
           <div class="rank-shield-sm">
-            <img src="./ランクマーク.png" style="left: -${r.col * 100}%; top: -${r.row * 100}%;" alt="${r.name}">
+            <img src="./ランクマーク.png" style="left: calc(-${r.col * 100}% - 2%); top: calc(-${r.row * 100}% - 2%);" alt="${r.name}">
           </div>
           <div style="font-size:10px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
           <div style="font-size:9px; color:var(--text-sub);">偏差値: ${dev !== null ? dev.toFixed(1) : '-'}</div>
@@ -1313,13 +1313,13 @@
         subjectsGrid.appendChild(card);
       });
 
-      // 6枠目の「勉強時間」カード (時間を大きく、余計なアイコンは不要)
+      // 6枠目の「勉強時間」カード (n:nn形式で大きく表示、余計なアイコンは不要)
       const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
       timeCard.style.cursor = 'pointer';
       timeCard.innerHTML = `
         <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">勉強時間</div>
-        <div style="width:56px; height:56px; margin:0 auto 2px auto; background:#161618; border:1px solid var(--card-border); border-radius:8px; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size:11px; font-weight:bold; color:var(--rank-gold); text-align:center; padding:0 2px; line-height:1.2;">${formatTime(totalCumulativeMins)}</span>
+        <div style="width:44px; height:44px; margin:0 auto 2px auto; background:transparent; display:flex; align-items:center; justify-content:center;">
+          <span style="font-size:15px; font-weight:bold; color:var(--rank-gold); text-align:center; line-height:1.1;">${formatTime(totalCumulativeMins)}</span>
         </div>
         <div style="font-size:10px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">累計</div>
         <div style="font-size:9px; color:var(--text-sub);">詳細確認</div>
