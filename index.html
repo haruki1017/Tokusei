@@ -82,7 +82,7 @@
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     
-    /* 横2個 × 3段のグリッドに変更 */
+    /* 横2個 × 3段のグリッド */
     .subjects-rank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
     .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
     
@@ -472,25 +472,36 @@
       else if (lp >= 100) { baseName = 'シルバー'; file = '2.png'; color = '#c0c0c0'; }
       else { baseName = 'ブロンズ'; file = '1.png', color = '#cd7f32'; }
 
-      const startLP = Math.floor(lp / 100) * 100;
       const modLP = lp % 100;
       const displayLP = (lp >= 700 && !isChallenger) ? lp - 600 : modLP;
       return { name: baseName, file, color, sub: `${baseName === 'マスター' && lp >= 700 ? 'マスター' : baseName}${displayLP}LP` };
     }
 
-    // 次のランクまでの必要ポイント（またはチャレンジャー条件）を算出する関数
-    function getNextRankInfo(lp, isChallenger, isSubject=false) {
+    // 正確な次のランク情報・昇格条件を返す関数
+    function getNextRankInfo(lp, isChallenger) {
       if (lp >= 700) {
         if (isChallenger) return '最高ランク到達中';
-        // チャレンジャー昇格には「マスターであること(>=600 or >=700 ※仕様によりマスターは600~699、または700維持)」
-        // 指示書: 「マスターからじゃないとチャレンジャーになれない」「模試のタイミングでしか昇格できない」「総合得点率90%以上＆全科目基準点突破」
         return '次回模試で得点率90%以上＆基準点突破でチャレンジャーへ';
       }
-      const nextTarget = Math.floor(lp / 100) * 100 + 100;
+      
+      // ブロンズ(0~99) -> 次はシルバー(100)
+      // シルバー(100~199) -> 次はゴールド(200)
+      // ゴールド(200~299) -> 次はプラチナ(300)
+      // プラチナ(300~399) -> 次はエメラルド(400)
+      // エメラルド(400~499) -> 次はダイヤモンド(500)
+      // ダイヤモンド(500~599) -> 次はマスター(600)
+      // マスター(600~699) -> 次はチャレンジャー(700以上かつ模試条件)
+      let nextTarget = Math.floor(lp / 100) * 100 + 100;
+      if (nextTarget > 700) nextTarget = 700;
       const diff = nextTarget - lp;
-      const nextRankNames = ['シルバー', 'ゴールド', 'プラチナ', 'エメラルド', 'ダイヤモンド', 'マスター', 'チャレンジャー'];
-      const rankIdx = Math.floor(nextTarget / 100);
-      const nextName = nextRankNames[rankIdx] || 'マスター';
+
+      const rankNames = ['シルバー', 'ゴールド', 'プラチナ', 'エメラルド', 'ダイヤモンド', 'マスター', 'チャレンジャー'];
+      const targetIdx = Math.floor(nextTarget / 100) - 1;
+      const nextName = rankNames[targetIdx] || 'マスター';
+
+      if (lp >= 600) {
+        return `次(${nextName})まで あと${diff}LP (要模試90%以上)`;
+      }
       return `次(${nextName})まで あと${diff}LP`;
     }
 
@@ -720,9 +731,8 @@
           test.lpDiff = actualDiff;
 
           const threshold = subjectThresholds[subj] || 14;
-          // チャレンジャー昇格条件: LP >= 700 ＆ 得点率 >= 90% ＆ 基準点突破 ＆ 【追加条件: マスター以上(プレLPが600以上など、あるいは更新前がマスター)】
-          // 指示書: 「マスターからじゃないとチャレンジャーになれない」
-          const wasMasterBeforeExam = preLP >= 600; // 更新前がマスター帯(600〜699)であること
+          // チャレンジャー昇格条件: LP >= 700 ＆ 得点率 >= 90% ＆ 基準点突破 ＆ 更新前がマスター帯(600〜699)であること
+          const wasMasterBeforeExam = preLP >= 600;
           if (subjectLP[subj] >= 700 && rate >= 90 && test.scoreVal >= threshold && wasMasterBeforeExam) {
             subjectChallenger[subj] = true;
           } else if (subjectLP[subj] < 700 || rate < 90 || test.scoreVal < threshold) {
@@ -730,12 +740,6 @@
           }
         }
       });
-
-      // 総合チャレンジャーの判定（模試後）
-      // 「総合LPが700以上」「模試の総合得点率が90%以上」「全5科目で基準点突破」「マスターであること（更新前総合LPが600以上など）」
-      if (totalLP >= 700) {
-        // マスターからではない場合はチャレンジャーにさせない（保持者が落ちる場合などは別途ハンドリング）
-      }
 
       localStorage.setItem('tokusei_subject_lp', JSON.stringify(subjectLP));
       localStorage.setItem('tokusei_total_lp', JSON.stringify(totalLP));
@@ -1371,9 +1375,9 @@
       document.getElementById('overall-rank-name-text').innerText = overallRank.name;
       document.getElementById('overall-rank-name-text').style.color = overallRank.color;
       document.getElementById('overall-dev-text').innerText = `総合LP: ${totalLP}LP (${overallRank.sub})`;
-      document.getElementById('overall-next-info').innerText = getNextRankInfo(totalLP, totalChallenger, false);
+      document.getElementById('overall-next-info').innerText = getNextRankInfo(totalLP, totalChallenger);
 
-      // 各科目グリッド更新（横2個×3段になり、アイコン・文字が大きく、次のランク情報が表示されます）
+      // 各科目グリッド更新
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       
@@ -1381,7 +1385,7 @@
         const lp = subjectLP[s];
         const isChall = subjectChallenger[s];
         const r = getRankInfoByLP(lp, isChall);
-        const nextInfo = getNextRankInfo(lp, isChall, true);
+        const nextInfo = getNextRankInfo(lp, isChall);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
           <div style="font-size:13px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">${s}</div>
@@ -1416,7 +1420,7 @@
         subjectsGrid.appendChild(card);
       });
 
-      // 勉強時間カード（6つ目の枠として自然に並ぶ）
+      // 勉強時間カード
       const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
       timeCard.style.cursor = 'pointer';
       timeCard.innerHTML = `
