@@ -306,7 +306,7 @@
     </div>
   </div>
 
-  <!-- モーダル: テスト偏差値・得点入力 -->
+  <!-- モーダル: テスト得点入力 (偏差値なし・LP制) -->
   <div class="modal-overlay" id="test-score-modal" onclick="closeModal('test-score-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-title">📝 予備校テスト・模試 入力</div>
@@ -541,7 +541,7 @@
 
     let subjectChallenger = JSON.parse(localStorage.getItem('tokusei_subject_challenger')) || { '計画': false, '環境・設備': false, '法規': false, '構造': false, '施工': false };
     let totalChallenger = JSON.parse(localStorage.getItem('tokusei_total_challenger')) || false;
-    let subjectThresholds = JSON.parse(localStorage.getItem('tokusei_subject_thresholds')) || { '計画': 14, '環境・設備': 14, '法規': 15, '構造': 14, '施工': 14 }; // 基準点のデフォルト設定
+    let subjectThresholds = JSON.parse(localStorage.getItem('tokusei_subject_thresholds')) || { '計画': 14, '環境・設備': 14, '法規': 15, '構造': 14, '施工': 14 };
     let testScores = JSON.parse(localStorage.getItem('tokusei_test_scores')) || [
       { id: 1001, date: '2026-07-01', name: '施工1', type: 'normal', subject: '施工', scoreVal: 14, scoreMax: 20, lpDiff: -20 }
     ];
@@ -563,7 +563,6 @@
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function toggleDrawer(open) { document.getElementById('drawer-overlay').classList[open?'add':'remove']('active'); }
     function calculateRank(rate) { return rate >= 90 ? 'S' : rate >= 70 ? 'A' : rate >= 50 ? 'B' : 'F'; }
-    function requestNotify() { if ('Notification' in window) Notification.requestPermission().then(p => showToast(p==='granted'?'通知許可済':'ブロック済')); }
 
     function switchTab(tabName, el) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -670,13 +669,11 @@
 
     // --- LP再計算およびテスト登録ロジック ---
     function recalculateAllLP() {
-      // 初期LP設定 (5科目各450、総合450)
       subjectLP = { '計画': 450, '環境・設備': 450, '法規': 450, '構造': 450, '施工': 450 };
       totalLP = 450;
       subjectChallenger = { '計画': false, '環境・設備': false, '法規': false, '構造': false, '施工': false };
       totalChallenger = false;
 
-      // 時系列順にソートして再計算
       testScores.sort((a, b) => a.id - b.id);
 
       testScores.forEach(test => {
@@ -692,18 +689,9 @@
           totalLP = Math.max(0, totalLP + actualDiff);
           test.lpDiff = actualDiff;
 
-          // 降格判定 (通常テストで700未満になったら即降格)
           if (subjectLP[subj] < 700) subjectChallenger[subj] = false;
           if (totalLP < 700) totalChallenger = false;
         } else if (test.type === 'exam') {
-          // 模試処理 (5科目分をまとめて計算)
-          let totalDiff = 0;
-          let subDiffs = {};
-          const subList = ['計画', '環境・設備', '法規', '構造', '施工'];
-          
-          // 模試データが科目別になっているか、総合得点になっているかの考慮
-          // 指示書「模試では5科目のLPをそれぞれ更新してください」「模試のLP変動は5科目まとめて行い、すべての更新が終わってから総合ランクを判定してください」
-          // ここではテストデータに各科目の結果が含まれるか、あるいは1科目ごとの模試かを確認。簡易的に対象科目、または全科目一括の場合は各科目のスコアを使用。
           const subj = test.subject;
           const preLP = subjectLP[subj];
           const diff = calculateExamLPDiff(rate, preLP);
@@ -713,7 +701,6 @@
           totalLP = Math.max(0, totalLP + actualDiff);
           test.lpDiff = actualDiff;
 
-          // 模試反映後のチャレンジャー判定
           const threshold = subjectThresholds[subj] || 14;
           if (subjectLP[subj] >= 700 && rate >= 90 && test.scoreVal >= threshold) {
             subjectChallenger[subj] = true;
@@ -731,11 +718,7 @@
     }
 
     function calculateNormalLPDiff(rate, preLP) {
-      let tier = 'low'; // プラチナ以下 (<300)
-      if (preLP >= 400) tier = 'high'; // マスター以上 (>=600) -> 指示書の定義「エメラルド〜ダイヤ」「マスター以上」に合わせる
-      else if (preLP >= 300) tier = 'mid'; // エメラルド〜ダイヤ (300〜599)
-
-      // 修正: ランク帯区分 (プラチナ以下: <300, エメラルド〜ダイヤ: 300-599, マスター以上: >=600)
+      let tier = 'low';
       if (preLP >= 600) tier = 'high';
       else if (preLP >= 300) tier = 'mid';
       else tier = 'low';
@@ -1354,7 +1337,7 @@
 
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
 
-      // 総合ランク表示の更新
+      // 総合ランク表示 (偏差値表示の代わりに総合LPを表示)
       const overallRank = getRankInfoByLP(totalLP, totalChallenger);
       const imgEl = document.getElementById('overall-rank-img');
       imgEl.src = overallRank.file;
@@ -1362,7 +1345,7 @@
       document.getElementById('overall-rank-name-text').style.color = overallRank.color;
       document.getElementById('overall-dev-text').innerText = `総合LP: ${totalLP}LP (${overallRank.sub})`;
 
-      // 各科目グリッド更新
+      // 各科目グリッド更新 (偏差値の部分にそれぞれのLPを表示)
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       
@@ -1377,7 +1360,7 @@
             <img src="${r.file}" alt="${r.name}">
           </div>
           <div style="font-size:10px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
-          <div style="font-size:9px; color:var(--text-sub);">${r.sub}</div>
+          <div style="font-size:9px; color:var(--text-sub);">${lp}LP</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
