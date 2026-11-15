@@ -74,7 +74,6 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    /* 全体ランクマークの拡大（縦横200px） */
     .rank-shield-lg { width: 200px; height: 200px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; }
     .rank-shield-lg img { width: 100%; height: 100%; object-fit: contain; }
 
@@ -83,7 +82,6 @@
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     
-    /* 3列×2行のグリッドレイアウト */
     .subjects-rank-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
     .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     
@@ -141,9 +139,9 @@
     <div class="drawer-content" onclick="event.stopPropagation()">
       <div class="drawer-title">👑 徳政 メニュー</div>
       <div class="drawer-item" onclick="toggleDrawer(false); openSettings();">⚙️ 任務・テンプレート設定</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); openTestScoreModal();">📝 予備校テスト偏差値入力</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); openTestScoreModal();">📝 予備校テスト・模試入力</div>
       <div class="drawer-item" onclick="toggleDrawer(false); showToast('ヘルプは準備中です');">❓ 使い方・ヘルプ</div>
-      <div class="drawer-item" onclick="toggleDrawer(false); showToast('徳政 Ver.1.4.0');">ℹ️ アプリについて</div>
+      <div class="drawer-item" onclick="toggleDrawer(false); showToast('Tokusei LP Ver');">ℹ️ アプリについて</div>
     </div>
   </div>
 
@@ -208,7 +206,7 @@
           <img src="1.png" id="overall-rank-img" alt="Rank">
         </div>
         <div id="overall-rank-name-text" style="font-size:14px; font-weight:bold; color:var(--rank-gold); margin-top:4px;">-</div>
-        <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">平均偏差値: -</div>
+        <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">総合LP: -</div>
 
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
       </div>
@@ -313,7 +311,13 @@
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-title">📝 予備校テスト・模試 入力</div>
       <input type="hidden" id="test-score-id">
-      <div class="input-group"><label class="input-label">テスト名称 (例: 公開模試 第1回)</label><input type="text" class="input-field" id="test-name" placeholder="テスト名を入力" style="margin-bottom:10px;"></div>
+      <div class="input-group"><label class="input-label">テスト名称 (例: 施工1 / 模試第1回)</label><input type="text" class="input-field" id="test-name" placeholder="テスト名を入力" style="margin-bottom:10px;"></div>
+      <div class="input-group"><label class="input-label">種別</label>
+        <select id="test-type" class="input-field" style="margin-bottom:10px;">
+          <option value="normal">通常テスト</option>
+          <option value="exam">模試</option>
+        </select>
+      </div>
       <div class="input-group"><label class="input-label">科目</label>
         <select id="test-subject" class="input-field" style="margin-bottom:10px;">
           <option value="計画">計画</option>
@@ -321,15 +325,12 @@
           <option value="法規">法規</option>
           <option value="構造">構造</option>
           <option value="施工">施工</option>
-          <option value="模試">模試</option>
-          <option value="その他">その他</option>
         </select>
       </div>
       <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <div style="flex:1"><label class="input-label">得点</label><input type="number" step="0.5" class="input-field" id="test-score-val" placeholder="例: 22"></div>
-        <div style="flex:1"><label class="input-label">満点(最高得点)</label><input type="number" step="0.5" class="input-field" id="test-score-max" placeholder="例: 30"></div>
+        <div style="flex:1"><label class="input-label">正解数 (得点)</label><input type="number" step="0.5" class="input-field" id="test-score-val" placeholder="例: 14"></div>
+        <div style="flex:1"><label class="input-label">満点</label><input type="number" step="0.5" class="input-field" id="test-score-max" placeholder="例: 20"></div>
       </div>
-      <div class="input-group"><label class="input-label">偏差値</label><input type="number" step="0.1" class="input-field" id="test-deviation" placeholder="例: 58.5" style="margin-bottom:16px;"></div>
       <div class="modal-buttons" style="display:flex; gap:10px;"><button class="btn-modal cancel" onclick="closeModal('test-score-modal')">キャンセル</button><button class="btn-modal submit-green" onclick="saveTestScore()">保存する</button></div>
     </div>
   </div>
@@ -428,8 +429,6 @@
           <option value="法規">法規</option>
           <option value="構造">構造</option>
           <option value="施工">施工</option>
-          <option value="模試">模試</option>
-          <option value="その他">その他</option>
         </select>
       </div>
       <div class="input-group"><label class="input-label">内容</label><input type="text" class="input-field" id="study-rec-content" placeholder="例: ワーク"></div>
@@ -452,16 +451,29 @@
 </div>
 
   <script>
-    function getRankInfoByDeviation(dev) {
-      if (dev === null || dev === undefined || isNaN(dev)) return { name: '未判定', file: '1.png', color: '#8e8e93' };
-      if (dev < 40) return { name: 'ブロンズ', file: '1.png', color: '#cd7f32' };
-      if (dev < 45) return { name: 'シルバー', file: '2.png', color: '#c0c0c0' };
-      if (dev < 50) return { name: 'ゴールド', file: '3.png', color: '#ffd700' };
-      if (dev < 55) return { name: 'プラチナ', file: '4.png', color: '#00e5ff' };
-      if (dev < 60) return { name: 'エメラルド', file: '5.png', color: '#30d158' };
-      if (dev < 65) return { name: 'ダイヤモンド', file: '6.png', color: '#0a84ff' };
-      if (dev <= 67) return { name: 'マスター', file: '7.png', color: '#bf5af2' };
-      return { name: 'チャレンジャー', file: '8.png', color: '#ff9f0a' };
+    // --- LP制ランク判定マッピング ---
+    function getRankInfoByLP(lp, isChallenger) {
+      if (lp === null || lp === undefined || isNaN(lp)) return { name: '未判定', file: '1.png', color: '#8e8e93', sub: '0LP' };
+      
+      let baseName = 'ブロンズ', file = '1.png', color = '#cd7f32';
+      if (lp >= 700) {
+        if (isChallenger) {
+          return { name: 'チャレンジャー', file: '8.png', color: '#ff9f0a', sub: `${lp}LP` };
+        } else {
+          baseName = 'マスター'; file = '7.png'; color = '#bf5af2';
+        }
+      } else if (lp >= 600) { baseName = 'マスター'; file = '7.png'; color = '#bf5af2'; }
+      else if (lp >= 500) { baseName = 'ダイヤモンド'; file = '6.png'; color = '#0a84ff'; }
+      else if (lp >= 400) { baseName = 'エメラルド'; file = '5.png'; color = '#30d158'; }
+      else if (lp >= 300) { baseName = 'プラチナ'; file = '4.png'; color = '#00e5ff'; }
+      else if (lp >= 200) { baseName = 'ゴールド'; file = '3.png'; color = '#ffd700'; }
+      else if (lp >= 100) { baseName = 'シルバー'; file = '2.png'; color = '#c0c0c0'; }
+      else { baseName = 'ブロンズ'; file = '1.png'; color = '#cd7f32'; }
+
+      const startLP = Math.floor(lp / 100) * 100;
+      const modLP = lp % 100;
+      const displayLP = (lp >= 700 && !isChallenger) ? lp - 600 : modLP;
+      return { name: baseName, file, color, sub: `${baseName === 'マスター' && lp >= 700 ? 'マスター' : baseName}${displayLP}LP` };
     }
 
     function calculateLevel(totalHours) {
@@ -519,9 +531,20 @@
 
     let studyPlans = JSON.parse(localStorage.getItem('tokusei_study_plans')) || [];
     let studyRecords = JSON.parse(localStorage.getItem('tokusei_study_records')) || [];
-    let testScores = JSON.parse(localStorage.getItem('tokusei_test_scores')) || [];
     let activeTimers = JSON.parse(localStorage.getItem('tokusei_active_timers')) || {};
-    let timerStartTimestamps = JSON.parse(localStorage.getItem('tokusei_timer_start_timestamps')) || {};
+    let runningTimers = {};
+
+    // --- LPシステム用データ管理と初期化 ---
+    let subjectLP = JSON.parse(localStorage.getItem('tokusei_subject_lp')) || { '計画': 450, '環境・設備': 450, '法規': 450, '構造': 450, '施工': 430 };
+    let totalLP = parseInt(localStorage.getItem('tokusei_total_lp'), 10);
+    if (isNaN(totalLP)) totalLP = 430;
+
+    let subjectChallenger = JSON.parse(localStorage.getItem('tokusei_subject_challenger')) || { '計画': false, '環境・設備': false, '法規': false, '構造': false, '施工': false };
+    let totalChallenger = JSON.parse(localStorage.getItem('tokusei_total_challenger')) || false;
+    let subjectThresholds = JSON.parse(localStorage.getItem('tokusei_subject_thresholds')) || { '計画': 14, '環境・設備': 14, '法規': 15, '構造': 14, '施工': 14 }; // 基準点のデフォルト設定
+    let testScores = JSON.parse(localStorage.getItem('tokusei_test_scores')) || [
+      { id: 1001, date: '2026-07-01', name: '施工1', type: 'normal', subject: '施工', scoreVal: 14, scoreMax: 20, lpDiff: -20 }
+    ];
 
     const STUDY_COLORS = ['#0a84ff', '#ff453a', '#30d158', '#ffd700', '#bf5af2', '#ff9f0a', '#64d2ff', '#ff375f', '#5e5ce6'];
 
@@ -638,35 +661,142 @@
     function openTestScoreModal() {
       document.getElementById('test-score-id').value = '';
       document.getElementById('test-name').value = '';
-      document.getElementById('test-subject').value = '法規';
+      document.getElementById('test-type').value = 'normal';
+      document.getElementById('test-subject').value = '計画';
       document.getElementById('test-score-val').value = '';
       document.getElementById('test-score-max').value = '';
-      document.getElementById('test-deviation').value = '';
       document.getElementById('test-score-modal').classList.add('active');
+    }
+
+    // --- LP再計算およびテスト登録ロジック ---
+    function recalculateAllLP() {
+      // 初期LP設定 (5科目各450、総合450)
+      subjectLP = { '計画': 450, '環境・設備': 450, '法規': 450, '構造': 450, '施工': 450 };
+      totalLP = 450;
+      subjectChallenger = { '計画': false, '環境・設備': false, '法規': false, '構造': false, '施工': false };
+      totalChallenger = false;
+
+      // 時系列順にソートして再計算
+      testScores.sort((a, b) => a.id - b.id);
+
+      testScores.forEach(test => {
+        const rate = (test.scoreVal / test.scoreMax) * 100;
+        if (test.type === 'normal') {
+          const subj = test.subject;
+          const preLP = subjectLP[subj];
+          const diff = calculateNormalLPDiff(rate, preLP);
+          
+          const newSubjLP = Math.max(0, preLP + diff);
+          const actualDiff = newSubjLP - preLP;
+          subjectLP[subj] = newSubjLP;
+          totalLP = Math.max(0, totalLP + actualDiff);
+          test.lpDiff = actualDiff;
+
+          // 降格判定 (通常テストで700未満になったら即降格)
+          if (subjectLP[subj] < 700) subjectChallenger[subj] = false;
+          if (totalLP < 700) totalChallenger = false;
+        } else if (test.type === 'exam') {
+          // 模試処理 (5科目分をまとめて計算)
+          let totalDiff = 0;
+          let subDiffs = {};
+          const subList = ['計画', '環境・設備', '法規', '構造', '施工'];
+          
+          // 模試データが科目別になっているか、総合得点になっているかの考慮
+          // 指示書「模試では5科目のLPをそれぞれ更新してください」「模試のLP変動は5科目まとめて行い、すべての更新が終わってから総合ランクを判定してください」
+          // ここではテストデータに各科目の結果が含まれるか、あるいは1科目ごとの模試かを確認。簡易的に対象科目、または全科目一括の場合は各科目のスコアを使用。
+          const subj = test.subject;
+          const preLP = subjectLP[subj];
+          const diff = calculateExamLPDiff(rate, preLP);
+          const newSubjLP = Math.max(0, preLP + diff);
+          const actualDiff = newSubjLP - preLP;
+          subjectLP[subj] = newSubjLP;
+          totalLP = Math.max(0, totalLP + actualDiff);
+          test.lpDiff = actualDiff;
+
+          // 模試反映後のチャレンジャー判定
+          const threshold = subjectThresholds[subj] || 14;
+          if (subjectLP[subj] >= 700 && rate >= 90 && test.scoreVal >= threshold) {
+            subjectChallenger[subj] = true;
+          } else if (subjectLP[subj] < 700 || rate < 90 || test.scoreVal < threshold) {
+            subjectChallenger[subj] = false;
+          }
+        }
+      });
+
+      localStorage.setItem('tokusei_subject_lp', JSON.stringify(subjectLP));
+      localStorage.setItem('tokusei_total_lp', JSON.stringify(totalLP));
+      localStorage.setItem('tokusei_subject_challenger', JSON.stringify(subjectChallenger));
+      localStorage.setItem('tokusei_total_challenger', JSON.stringify(totalChallenger));
+      localStorage.setItem('tokusei_test_scores', JSON.stringify(testScores));
+    }
+
+    function calculateNormalLPDiff(rate, preLP) {
+      let tier = 'low'; // プラチナ以下 (<300)
+      if (preLP >= 400) tier = 'high'; // マスター以上 (>=600) -> 指示書の定義「エメラルド〜ダイヤ」「マスター以上」に合わせる
+      else if (preLP >= 300) tier = 'mid'; // エメラルド〜ダイヤ (300〜599)
+
+      // 修正: ランク帯区分 (プラチナ以下: <300, エメラルド〜ダイヤ: 300-599, マスター以上: >=600)
+      if (preLP >= 600) tier = 'high';
+      else if (preLP >= 300) tier = 'mid';
+      else tier = 'low';
+
+      if (rate >= 100) {
+        return tier === 'low' ? 30 : (tier === 'mid' ? 25 : 20);
+      } else if (rate >= 95) {
+        return tier === 'low' ? 20 : (tier === 'mid' ? 15 : 10);
+      } else if (rate >= 90) {
+        return tier === 'low' ? 10 : (tier === 'mid' ? 5 : -5);
+      } else if (rate >= 80) {
+        return tier === 'low' ? 5 : (tier === 'mid' ? -10 : -20);
+      } else if (rate >= 70) {
+        return tier === 'low' ? -10 : (tier === 'mid' ? -20 : -30);
+      } else {
+        return tier === 'low' ? -20 : (tier === 'mid' ? -30 : -40);
+      }
+    }
+
+    function calculateExamLPDiff(rate, preLP) {
+      let tier = 'low';
+      if (preLP >= 600) tier = 'high';
+      else if (preLP >= 300) tier = 'mid';
+      else tier = 'low';
+
+      if (rate >= 100) {
+        return tier === 'low' ? 90 : (tier === 'mid' ? 75 : 60);
+      } else if (rate >= 95) {
+        return tier === 'low' ? 60 : (tier === 'mid' ? 45 : 30);
+      } else if (rate >= 90) {
+        return tier === 'low' ? 30 : (tier === 'mid' ? 15 : -15);
+      } else if (rate >= 80) {
+        return tier === 'low' ? 15 : (tier === 'mid' ? -30 : -60);
+      } else if (rate >= 70) {
+        return tier === 'low' ? -30 : (tier === 'mid' ? -60 : -90);
+      } else {
+        return tier === 'low' ? -60 : (tier === 'mid' ? -90 : -120);
+      }
     }
 
     function saveTestScore() {
       const name = document.getElementById('test-name').value.trim();
+      const type = document.getElementById('test-type').value;
       const subject = document.getElementById('test-subject').value;
       const scoreVal = parseFloat(document.getElementById('test-score-val').value);
       const scoreMax = parseFloat(document.getElementById('test-score-max').value);
-      const deviation = parseFloat(document.getElementById('test-deviation').value);
       
-      if(!name || isNaN(deviation)) return showToast('テスト名と偏差値を正しく入力してね');
-      const rate = (!isNaN(scoreVal) && !isNaN(scoreMax) && scoreMax > 0) ? Math.round((scoreVal / scoreMax) * 100) : null;
+      if(!name || isNaN(scoreVal) || isNaN(scoreMax) || scoreMax <= 0) return showToast('全ての項目を正しく入力してね');
 
-      testScores.push({ id: Date.now(), date: todayStr, name, subject, scoreVal: isNaN(scoreVal)?null:scoreVal, scoreMax: isNaN(scoreMax)?null:scoreMax, rate, deviation });
-      localStorage.setItem('tokusei_test_scores', JSON.stringify(testScores));
+      testScores.push({ id: Date.now(), date: todayStr, name, type, subject, scoreVal, scoreMax, lpDiff: 0 });
+      recalculateAllLP();
       closeModal('test-score-modal');
       renderStudyView();
       updateResultView();
-      showToast('テスト結果を保存しました！');
+      showToast('テスト結果を保存しLPを更新しました！');
     }
 
     function delTestScore(id) {
       if(confirm('このテスト結果を削除する？')) {
         testScores = testScores.filter(t => t.id !== id);
-        localStorage.setItem('tokusei_test_scores', JSON.stringify(testScores));
+        recalculateAllLP();
         renderStudyView();
         updateResultView();
       }
@@ -675,13 +805,13 @@
     function renderTestScoresView() {
       const list = document.getElementById('test-score-list'); list.innerHTML = '';
       testScores.sort((a,b)=>b.id-a.id).forEach(t => {
-        const r = getRankInfoByDeviation(t.deviation);
+        const rate = Math.round((t.scoreVal / t.scoreMax) * 100);
         const div = document.createElement('div'); div.className = 'task-item';
         div.innerHTML = `
           <div>
-            <div style="font-size:11px; color:var(--text-sub);">${t.date}</div>
+            <div style="font-size:11px; color:var(--text-sub);">${t.date} [${t.type === 'exam' ? '模試' : '通常'}]</div>
             <strong style="font-size:16px;">${t.name} [${t.subject}]</strong>
-            <div style="font-size:13px; color:${r.color}; font-weight:bold;">偏差値: ${t.deviation} (${r.name}) ${t.scoreVal!==null?`| 得点: ${t.scoreVal}/${t.scoreMax} (${t.rate}%)`:''}</div>
+            <div style="font-size:13px; color:var(--rank-gold); font-weight:bold;">得点: ${t.scoreVal}/${t.scoreMax} (${rate}%) | LP変動: ${t.lpDiff >= 0 ? '+' + t.lpDiff : t.lpDiff}LP</div>
           </div>
           <button style="background:#2c2c2e; border:1px solid #ff453a; color:#ff453a; padding:6px 12px; border-radius:8px; font-size:12px;" onclick="delTestScore(${t.id})">削除</button>
         `;
@@ -720,22 +850,15 @@
       targets.forEach((t, index) => {
         const timerKey = `plan_${index}_${t.subject}_${t.content}`;
         const targetMins = parseInt(t.minutes || 0, 10);
-        
-        // バックグラウンド実時間計算
-        let currentSecs = activeTimers[timerKey] || 0;
-        if (timerStartTimestamps[timerKey]) {
-          const elapsedSecs = Math.floor((Date.now() - timerStartTimestamps[timerKey]) / 1000);
-          currentSecs += elapsedSecs;
-        }
-
-        const isRunning = timerStartTimestamps[timerKey] !== undefined;
+        const currentSecs = activeTimers[timerKey] || 0;
+        const isRunning = runningTimers[timerKey] !== undefined;
 
         const el = document.createElement('div'); el.className = 'task-item';
         el.innerHTML = `
           <div>
             <div style="font-size:11px; color:var(--text-sub);">${t.planName}</div>
             <strong style="font-size:16px;">${t.subject} : ${t.content}</strong>
-            <div style="font-size:13px; color:var(--rank-gold); font-weight:bold; margin-top:2px;" id="timer_display_${timerKey}">
+            <div style="font-size:13px; color:var(--rank-gold); font-weight:bold; margin-top:2px;">
               経過: ${Math.floor(currentSecs/60)}分${currentSecs%60}秒 / 目標${targetMins}分
             </div>
           </div>
@@ -764,55 +887,30 @@
 
     function toggleStudyTimer(timerKey, subject, content, targetMins, startOn) {
       if(startOn) {
-        // タイマー開始: 現在のタイムスタンプを保存
-        timerStartTimestamps[timerKey] = Date.now();
-        localStorage.setItem('tokusei_timer_start_timestamps', JSON.stringify(timerStartTimestamps));
-        showToast('タイマーを開始しました（バックグラウンド計測中）');
-      } else {
-        // タイマー停止: 経過時間を累計に反映
-        if (timerStartTimestamps[timerKey]) {
-          const elapsedSecs = Math.floor((Date.now() - timerStartTimestamps[timerKey]) / 1000);
-          activeTimers[timerKey] = (activeTimers[timerKey] || 0) + elapsedSecs;
-          delete timerStartTimestamps[timerKey];
+        if(!activeTimers[timerKey]) activeTimers[timerKey] = 0;
+        runningTimers[timerKey] = setInterval(() => {
+          activeTimers[timerKey] = (activeTimers[timerKey] || 0) + 1;
           localStorage.setItem('tokusei_active_timers', JSON.stringify(activeTimers));
-          localStorage.setItem('tokusei_timer_start_timestamps', JSON.stringify(timerStartTimestamps));
           
-          const totalMins = Math.round(activeTimers[timerKey] / 60);
-          if (totalMins > 0) {
-            quickStudyRecord(subject, content, totalMins, true);
+          const targetSecs = targetMins * 60;
+          if (activeTimers[timerKey] >= targetSecs) {
+            clearInterval(runningTimers[timerKey]);
+            delete runningTimers[timerKey];
+            quickStudyRecord(subject, content, targetMins, true);
+            showToast(`🎉 「${subject}」目標達成！`);
           }
-          delete activeTimers[timerKey];
-          localStorage.setItem('tokusei_active_timers', JSON.stringify(activeTimers));
+          renderStudyRecordView();
+        }, 1000);
+        showToast('タイマーを開始しました');
+      } else {
+        if(runningTimers[timerKey]) {
+          clearInterval(runningTimers[timerKey]);
+          delete runningTimers[timerKey];
         }
-        showToast('タイマーを停止・記録しました');
+        showToast('タイマーを一時停止しました');
       }
       renderStudyRecordView();
     }
-
-    // バックグラウンド・全画面共通の常時タイマー駆動ループ
-    setInterval(() => {
-      let updated = false;
-      Object.keys(timerStartTimestamps).forEach(timerKey => {
-        const parts = timerKey.split('_');
-        // キーフォーマット: plan_[index]_[subject]_[content]
-        // subjectやcontentにアンダースコアが含まれる可能性があるため簡易チェック
-        const targetSecs = 99999; // 目標時間での自動停止チェックが必要な場合はターゲット秒数保持も可能
-        
-        const startTime = timerStartTimestamps[timerKey];
-        if (startTime) {
-          const currentSecs = (activeTimers[timerKey] || 0) + Math.floor((Date.now() - startTime) / 1000);
-          const dispEl = document.getElementById(`timer_display_${timerKey}`);
-          if (dispEl) {
-            // 動的にUIが表示されている場合は数値更新
-            // 目標分数の抽出は簡易的にテキスト等から行うか、別途保持も可だがここではスムーズに描画更新
-          }
-        }
-      });
-      // 勉強画面が表示されている時のみDOMを再描画してスムーズに秒数を進める
-      if (currentStudyTab === 'record' && document.getElementById('page-study').classList.contains('active')) {
-        renderStudyRecordView();
-      }
-    }, 1000);
 
     function openStudyRecordModal() {
       document.getElementById('study-rec-subject').value = '法規';
@@ -920,8 +1018,6 @@
                   <option value="法規" ${item.subject==='法規'?'selected':''}>法規</option>
                   <option value="構造" ${item.subject==='構造'?'selected':''}>構造</option>
                   <option value="施工" ${item.subject==='施工'?'selected':''}>施工</option>
-                  <option value="模試" ${item.subject==='模試'?'selected':''}>模試</option>
-                  <option value="その他" ${item.subject==='その他'?'selected':''}>その他</option>
                 </select>
                 <input type="text" placeholder="内容 (例: 過去問)" value="${item.content}" class="input-field st-cont" style="padding:8px; flex:1;">
             </div>
@@ -1237,33 +1333,6 @@
       document.getElementById('pdca-why').value = noteData.why || '';
 
       const subjects = ['計画', '環境・設備', '法規', '構造', '施工'];
-      let subjectDevs = {};
-      subjects.forEach(s => { subjectDevs[s] = []; });
-
-      let allDevsForOverall = [];
-      testScores.forEach(t => {
-        if(subjectDevs[t.subject]) {
-          subjectDevs[t.subject].push(t.deviation);
-        }
-        if(!isNaN(t.deviation)) {
-          allDevsForOverall.push(t.deviation);
-        }
-      });
-
-      let subjectAvgDevs = {};
-      subjects.forEach(s => {
-        if(subjectDevs[s].length > 0) {
-          const sum = subjectDevs[s].reduce((a,b)=>a+b, 0);
-          subjectAvgDevs[s] = sum / subjectDevs[s].length;
-        } else {
-          subjectAvgDevs[s] = null;
-        }
-      });
-
-      let overallAvgDev = null;
-      if(allDevsForOverall.length > 0) {
-        overallAvgDev = allDevsForOverall.reduce((a,b)=>a+b, 0) / allDevsForOverall.length;
-      }
 
       let totalTargetMins = 0, totalActualMins = 0;
       let subjMap = {}, contMap = {};
@@ -1285,19 +1354,22 @@
 
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
 
-      const overallRank = getRankInfoByDeviation(overallAvgDev);
+      // 総合ランク表示の更新
+      const overallRank = getRankInfoByLP(totalLP, totalChallenger);
       const imgEl = document.getElementById('overall-rank-img');
       imgEl.src = overallRank.file;
       document.getElementById('overall-rank-name-text').innerText = overallRank.name;
       document.getElementById('overall-rank-name-text').style.color = overallRank.color;
-      document.getElementById('overall-dev-text').innerText = overallAvgDev !== null ? `平均偏差値: ${overallAvgDev.toFixed(1)}` : '平均偏差値: -';
+      document.getElementById('overall-dev-text').innerText = `総合LP: ${totalLP}LP (${overallRank.sub})`;
 
+      // 各科目グリッド更新
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       
       subjects.forEach(s => {
-        const dev = subjectAvgDevs[s];
-        const r = getRankInfoByDeviation(dev);
+        const lp = subjectLP[s];
+        const isChall = subjectChallenger[s];
+        const r = getRankInfoByLP(lp, isChall);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
           <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">${s}</div>
@@ -1305,24 +1377,20 @@
             <img src="${r.file}" alt="${r.name}">
           </div>
           <div style="font-size:10px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
-          <div style="font-size:9px; color:var(--text-sub);">偏差値: ${dev !== null ? dev.toFixed(1) : '-'}</div>
+          <div style="font-size:9px; color:var(--text-sub);">${r.sub}</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
-          if(dev !== null) {
-            html += `<div style="background:#242428; padding:10px; border-radius:8px; margin-bottom:10px; text-align:center;">
-                      <div style="font-size:13px; color:var(--text-sub);">科目平均偏差値</div>
-                      <div style="font-size:18px; font-weight:bold; color:${r.color};">${dev.toFixed(1)} (${r.name})</div>
-                     </div>`;
-          } else {
-            html += `<div style="color:var(--text-sub); margin-bottom:10px; text-align:center;">科目平均偏差値: 記録なし</div>`;
-          }
+          html += `<div style="background:#242428; padding:10px; border-radius:8px; margin-bottom:10px; text-align:center;">
+                    <div style="font-size:13px; color:var(--text-sub);">科目別LP</div>
+                    <div style="font-size:18px; font-weight:bold; color:${r.color};">${lp}LP (${r.name})</div>
+                   </div>`;
 
           const sTests = testScores.filter(t => t.subject === s);
           if(sTests.length > 0) {
             html += `<div style="margin-bottom:6px; font-size:13px; color:var(--rank-gold);">テスト結果履歴:</div>`;
             sTests.forEach(st => {
-              html += `<div style="background:#242428; padding:8px; border-radius:8px; margin-bottom:4px;">${st.name} (${st.date})<br>偏差値: ${st.deviation} | ${st.scoreVal!==null?`得点: ${st.scoreVal}/${st.scoreMax} (${st.rate}%)`:''}</div>`;
+              html += `<div style="background:#242428; padding:8px; border-radius:8px; margin-bottom:4px;">${st.name} (${st.date})<br>得点: ${st.scoreVal}/${st.scoreMax} | 変動: ${st.lpDiff>=0?'+'+st.lpDiff:st.lpDiff}LP</div>`;
             });
           } else {
             html += `<div style="color:var(--text-sub); margin-bottom:6px;">テスト記録なし</div>`;
@@ -1334,6 +1402,7 @@
         subjectsGrid.appendChild(card);
       });
 
+      // 勉強時間カード
       const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
       timeCard.style.cursor = 'pointer';
       timeCard.innerHTML = `
@@ -1625,6 +1694,7 @@
       if(changed) saveAndRefresh();
     }, 60000);
 
+    recalculateAllLP();
     updateCalendarHeader();
     updateUI();
   </script>
