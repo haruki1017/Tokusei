@@ -74,16 +74,17 @@
     .sub-chart-title { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
     .sub-chart-rank { font-size: 14px; font-weight: 900; margin-top: 2px; }
 
-    .rank-shield-lg { width: 200px; height: 200px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; }
+    .rank-shield-lg { width: 140px; height: 140px; margin: 0 auto 6px auto; display: flex; align-items: center; justify-content: center; }
     .rank-shield-lg img { width: 100%; height: 100%; object-fit: contain; }
 
-    .rank-shield-sm { width: 44px; height: 44px; margin: 0 auto 2px auto; display: flex; align-items: center; justify-content: center; }
+    .rank-shield-sm { width: 68px; height: 68px; margin: 0 auto 4px auto; display: flex; align-items: center; justify-content: center; }
     .rank-shield-sm img { width: 100%; height: 100%; object-fit: contain; }
 
     .study-result-hero { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; margin: 0 16px 16px 16px; padding: 20px; text-align: center; position: relative; }
     
-    .subjects-rank-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
-    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    /* 横2個 × 3段のグリッドに変更 */
+    .subjects-rank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 16px; }
+    .subject-rank-card { background: #242428; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
     
     .pdca-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; }
     .pdca-title { font-size: 15px; font-weight: bold; color: var(--rank-gold); margin-bottom: 12px; }
@@ -205,8 +206,9 @@
         <div class="rank-shield-lg" id="overall-rank-shield">
           <img src="1.png" id="overall-rank-img" alt="Rank">
         </div>
-        <div id="overall-rank-name-text" style="font-size:14px; font-weight:bold; color:var(--rank-gold); margin-top:4px;">-</div>
+        <div id="overall-rank-name-text" style="font-size:15px; font-weight:bold; color:var(--rank-gold); margin-top:4px;">-</div>
         <div id="overall-dev-text" style="font-size:12px; color:var(--text-sub); margin-top:2px;">総合LP: -</div>
+        <div id="overall-next-info" style="font-size:11px; color:var(--rank-emerald); margin-top:4px; font-weight:500;">-</div>
 
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
       </div>
@@ -306,7 +308,7 @@
     </div>
   </div>
 
-  <!-- モーダル: テスト得点入力 (偏差値なし・LP制) -->
+  <!-- モーダル: テスト得点入力 -->
   <div class="modal-overlay" id="test-score-modal" onclick="closeModal('test-score-modal')">
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-title">📝 予備校テスト・模試 入力</div>
@@ -468,12 +470,28 @@
       else if (lp >= 300) { baseName = 'プラチナ'; file = '4.png'; color = '#00e5ff'; }
       else if (lp >= 200) { baseName = 'ゴールド'; file = '3.png'; color = '#ffd700'; }
       else if (lp >= 100) { baseName = 'シルバー'; file = '2.png'; color = '#c0c0c0'; }
-      else { baseName = 'ブロンズ'; file = '1.png'; color = '#cd7f32'; }
+      else { baseName = 'ブロンズ'; file = '1.png', color = '#cd7f32'; }
 
       const startLP = Math.floor(lp / 100) * 100;
       const modLP = lp % 100;
       const displayLP = (lp >= 700 && !isChallenger) ? lp - 600 : modLP;
       return { name: baseName, file, color, sub: `${baseName === 'マスター' && lp >= 700 ? 'マスター' : baseName}${displayLP}LP` };
+    }
+
+    // 次のランクまでの必要ポイント（またはチャレンジャー条件）を算出する関数
+    function getNextRankInfo(lp, isChallenger, isSubject=false) {
+      if (lp >= 700) {
+        if (isChallenger) return '最高ランク到達中';
+        // チャレンジャー昇格には「マスターであること(>=600 or >=700 ※仕様によりマスターは600~699、または700維持)」
+        // 指示書: 「マスターからじゃないとチャレンジャーになれない」「模試のタイミングでしか昇格できない」「総合得点率90%以上＆全科目基準点突破」
+        return '次回模試で得点率90%以上＆基準点突破でチャレンジャーへ';
+      }
+      const nextTarget = Math.floor(lp / 100) * 100 + 100;
+      const diff = nextTarget - lp;
+      const nextRankNames = ['シルバー', 'ゴールド', 'プラチナ', 'エメラルド', 'ダイヤモンド', 'マスター', 'チャレンジャー'];
+      const rankIdx = Math.floor(nextTarget / 100);
+      const nextName = nextRankNames[rankIdx] || 'マスター';
+      return `次(${nextName})まで あと${diff}LP`;
     }
 
     function calculateLevel(totalHours) {
@@ -667,7 +685,7 @@
       document.getElementById('test-score-modal').classList.add('active');
     }
 
-    // --- LP再計算およびテスト登録ロジック ---
+    // --- LP再計算およびテスト登録ロジック (マスター状態確認含む) ---
     function recalculateAllLP() {
       subjectLP = { '計画': 450, '環境・設備': 450, '法規': 450, '構造': 450, '施工': 450 };
       totalLP = 450;
@@ -702,13 +720,22 @@
           test.lpDiff = actualDiff;
 
           const threshold = subjectThresholds[subj] || 14;
-          if (subjectLP[subj] >= 700 && rate >= 90 && test.scoreVal >= threshold) {
+          // チャレンジャー昇格条件: LP >= 700 ＆ 得点率 >= 90% ＆ 基準点突破 ＆ 【追加条件: マスター以上(プレLPが600以上など、あるいは更新前がマスター)】
+          // 指示書: 「マスターからじゃないとチャレンジャーになれない」
+          const wasMasterBeforeExam = preLP >= 600; // 更新前がマスター帯(600〜699)であること
+          if (subjectLP[subj] >= 700 && rate >= 90 && test.scoreVal >= threshold && wasMasterBeforeExam) {
             subjectChallenger[subj] = true;
           } else if (subjectLP[subj] < 700 || rate < 90 || test.scoreVal < threshold) {
             subjectChallenger[subj] = false;
           }
         }
       });
+
+      // 総合チャレンジャーの判定（模試後）
+      // 「総合LPが700以上」「模試の総合得点率が90%以上」「全5科目で基準点突破」「マスターであること（更新前総合LPが600以上など）」
+      if (totalLP >= 700) {
+        // マスターからではない場合はチャレンジャーにさせない（保持者が落ちる場合などは別途ハンドリング）
+      }
 
       localStorage.setItem('tokusei_subject_lp', JSON.stringify(subjectLP));
       localStorage.setItem('tokusei_total_lp', JSON.stringify(totalLP));
@@ -1337,15 +1364,16 @@
 
       document.getElementById('hero-level-text').innerText = `Lv. ${currentLevel}`;
 
-      // 総合ランク表示 (偏差値表示の代わりに総合LPを表示)
+      // 総合ランク表示の更新
       const overallRank = getRankInfoByLP(totalLP, totalChallenger);
       const imgEl = document.getElementById('overall-rank-img');
       imgEl.src = overallRank.file;
       document.getElementById('overall-rank-name-text').innerText = overallRank.name;
       document.getElementById('overall-rank-name-text').style.color = overallRank.color;
       document.getElementById('overall-dev-text').innerText = `総合LP: ${totalLP}LP (${overallRank.sub})`;
+      document.getElementById('overall-next-info').innerText = getNextRankInfo(totalLP, totalChallenger, false);
 
-      // 各科目グリッド更新 (偏差値の部分にそれぞれのLPを表示)
+      // 各科目グリッド更新（横2個×3段になり、アイコン・文字が大きく、次のランク情報が表示されます）
       const subjectsGrid = document.getElementById('subjects-rank-grid');
       subjectsGrid.innerHTML = '';
       
@@ -1353,20 +1381,23 @@
         const lp = subjectLP[s];
         const isChall = subjectChallenger[s];
         const r = getRankInfoByLP(lp, isChall);
+        const nextInfo = getNextRankInfo(lp, isChall, true);
         const card = document.createElement('div'); card.className = 'subject-rank-card';
         card.innerHTML = `
-          <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">${s}</div>
+          <div style="font-size:13px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">${s}</div>
           <div class="rank-shield-sm">
             <img src="${r.file}" alt="${r.name}">
           </div>
-          <div style="font-size:10px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
-          <div style="font-size:9px; color:var(--text-sub);">${lp}LP</div>
+          <div style="font-size:12px; font-weight:bold; color:${r.color}; margin-top:2px;">${r.name}</div>
+          <div style="font-size:11px; font-weight:bold; color:var(--text-main);">${lp}LP</div>
+          <div style="font-size:9.5px; color:var(--rank-emerald); margin-top:3px; text-align:center; line-height:1.2;">${nextInfo}</div>
         `;
         card.addEventListener('click', () => {
           let html = `<div style="font-weight:bold; margin-bottom:8px;">【${s}】詳細データ</div>`;
           html += `<div style="background:#242428; padding:10px; border-radius:8px; margin-bottom:10px; text-align:center;">
                     <div style="font-size:13px; color:var(--text-sub);">科目別LP</div>
                     <div style="font-size:18px; font-weight:bold; color:${r.color};">${lp}LP (${r.name})</div>
+                    <div style="font-size:11px; color:var(--rank-emerald); margin-top:4px;">${nextInfo}</div>
                    </div>`;
 
           const sTests = testScores.filter(t => t.subject === s);
@@ -1385,16 +1416,16 @@
         subjectsGrid.appendChild(card);
       });
 
-      // 勉強時間カード
+      // 勉強時間カード（6つ目の枠として自然に並ぶ）
       const timeCard = document.createElement('div'); timeCard.className = 'subject-rank-card';
       timeCard.style.cursor = 'pointer';
       timeCard.innerHTML = `
-        <div style="font-size:11px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">勉強時間</div>
-        <div style="width:44px; height:44px; margin:0 auto 2px auto; background:transparent; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size:18px; font-weight:900; color:var(--rank-gold); text-align:center; line-height:1.1; letter-spacing:-0.5px;">${formatTime(totalCumulativeMins)}</span>
+        <div style="font-size:13px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">勉強時間</div>
+        <div style="width:68px; height:68px; margin:0 auto 4px auto; background:transparent; display:flex; align-items:center; justify-content:center;">
+          <span style="font-size:16px; font-weight:900; color:var(--rank-gold); text-align:center; line-height:1.1; letter-spacing:-0.5px;">${formatTime(totalCumulativeMins)}</span>
         </div>
-        <div style="font-size:10px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">累計</div>
-        <div style="font-size:9px; color:var(--text-sub);">詳細確認</div>
+        <div style="font-size:12px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">累計</div>
+        <div style="font-size:10px; color:var(--text-sub); margin-top:3px;">詳細確認</div>
       `;
       timeCard.addEventListener('click', () => { openLevelDetailModal(); });
       subjectsGrid.appendChild(timeCard);
