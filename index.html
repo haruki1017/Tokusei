@@ -66,7 +66,6 @@
     .date-header { text-align: center; font-size: 18px; font-weight: bold; }
 
     .main-summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; margin: 0 16px 16px 16px; padding: 16px; text-align: center; }
-    .main-summary-rate { font-size: 20px; font-weight: bold; margin-top: 2px; }
     .result-toku-summary-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; margin: 0 16px 16px 16px; padding: 12px 4px; display: flex; justify-content: space-around; text-align: center; }
     .result-daily-tasks-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; margin: 0 16px 16px 16px; padding: 16px; text-align: left; }
     .sub-charts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px 16px 16px; }
@@ -212,14 +211,10 @@
         <div class="subjects-rank-grid" id="subjects-rank-grid"></div>
       </div>
 
+      <!-- 勉強の目標達成率 円グラフ表示ボックス -->
       <div class="main-summary-box">
-        <div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">勉強の目標達成率</div>
-        <div class="main-summary-rate" id="res-study-rate-val" style="font-size:28px; font-weight:bold;">0%</div>
-      </div>
-
-      <div class="result-daily-tasks-box">
-        <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">科目別 / 内容別 詳細</div>
-        <div id="res-study-detail-stats" style="font-size:13px; display:flex; flex-direction:column; gap:8px;"></div>
+        <div style="font-size:14px; font-weight:bold; color:var(--text-sub); margin-bottom:10px;">今週の勉強 目標達成率</div>
+        <div id="study-pie-chart-container" style="display:flex; justify-content:center; align-items:center; padding:10px 0;"></div>
       </div>
     </div>
 
@@ -452,7 +447,6 @@
 </div>
 
   <script>
-    // --- LP制ランク判定マッピング ---
     function getRankInfoByLP(lp, isChallenger) {
       if (lp === null || lp === undefined || isNaN(lp)) return { name: '未判定', file: '1.png', color: '#8e8e93', sub: '0LP' };
       
@@ -551,8 +545,6 @@
 
     let studyPlans = JSON.parse(localStorage.getItem('tokusei_study_plans')) || [];
     let studyRecords = JSON.parse(localStorage.getItem('tokusei_study_records')) || [];
-    
-    // バックグラウンドでも確実にするため、開始タイムスタンプ(ms)を保持する
     let activeTimers = JSON.parse(localStorage.getItem('tokusei_active_timers')) || {};
 
     let subjectLP = JSON.parse(localStorage.getItem('tokusei_subject_lp')) || { '計画': 450, '環境・設備': 450, '法規': 450, '構造': 450, '施工': 430 };
@@ -854,7 +846,6 @@
         const timerKey = `plan_${index}_${t.subject}_${t.content}`;
         const targetMins = parseInt(t.minutes || 0, 10);
         
-        // タイムスタンプベースでスイッチの状態（ON/OFF）を判定
         const startTime = activeTimers[timerKey];
         const isRunning = startTime !== undefined;
 
@@ -882,7 +873,7 @@
         const el = document.createElement('div'); el.className = 'task-item';
         el.innerHTML = `
           <div><div style="font-size:14px; font-weight:bold;">${r.subject} : ${r.content}</div></div>
-          <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${Math.floor(r.minutes/60)}:${String(r.minutes%60).padStart(2,'0')}</span>
+          <div style="display:flex; gap:8px; align-items:center;"><span style="font-weight:bold; color:var(--text-main);">${r.minutes}分</span>
           <button style="background:#ff453a; border:none; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px;" onclick="delStudyRecord(${r.id})">取消</button></div>
         `;
         rList.appendChild(el);
@@ -890,20 +881,17 @@
       if(rList.innerHTML==='') rList.innerHTML = '<div style="color:var(--text-sub); font-size:13px; text-align:center;">まだ記録がありません</div>';
     }
 
-    // --- バックグラウンド対応: タイムスタンプの差分計算による計測ロジック ---
     function toggleStudyTimer(timerKey, subject, content, targetMins, startOn) {
       const now = Date.now();
       if(startOn) {
-        // スイッチをONにしたときの絶対時刻（ミリ秒）を保存
         activeTimers[timerKey] = now;
         localStorage.setItem('tokusei_active_timers', JSON.stringify(activeTimers));
         showToast('計測を開始しました');
       } else {
-        // スイッチをOFFにしたとき、開始時刻からの経過秒数を計算
         const startTime = activeTimers[timerKey];
         if (startTime) {
           const elapsedSecs = Math.floor((now - startTime) / 1000);
-          const elapsedMins = Math.round(elapsedSecs / 60); // 記録は分単位
+          const elapsedMins = Math.round(elapsedSecs / 60); 
           
           delete activeTimers[timerKey];
           localStorage.setItem('tokusei_active_timers', JSON.stringify(activeTimers));
@@ -1096,7 +1084,7 @@
         let summary = '';
         if(p.itemsByDay) {
             const totalWeekMins = Object.keys(p.itemsByDay).filter(k=>k!=='Special').reduce((sum, k) => sum + p.itemsByDay[k].reduce((s, i)=>s+parseInt(i.minutes||0,10), 0), 0);
-            summary = `<div style="font-size:12px; color:var(--text-sub);">一週間の目標: ${Math.floor(totalWeekMins/60)}:${String(totalWeekMins%60).padStart(2,'0')}</div>`;
+            summary = `<div style="font-size:12px; color:var(--text-sub);">一週間の目標: ${totalWeekMins}分</div>`;
         }
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
@@ -1195,7 +1183,7 @@
       return t;
     }
 
-    function formatTime(mins) { return `${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')}`; }
+    function formatTime(mins) { return `${mins}分`; }
 
     function openLevelDetailModal() {
       const totalCumulativeMins = studyRecords.reduce((acc, r) => acc + r.minutes, 0);
@@ -1205,7 +1193,7 @@
       let html = `<div style="font-weight:bold; margin-bottom:8px; text-align:center;">📊 レベル & 積み上げ学習時間</div>`;
       html += `<div style="background:#242428; padding:12px; border-radius:10px; margin-bottom:12px; text-align:center;">
                 <div style="font-size:22px; font-weight:bold; color:var(--rank-gold); margin-bottom:4px;">Lv. ${currentLevel}</div>
-                <div style="font-size:13px; color:var(--text-sub);">累計学習時間: <strong>${formatTime(totalCumulativeMins)}</strong> (${totalHours.toFixed(1)}時間)<br>※1500時間でLv.100</div>
+                <div style="font-size:13px; color:var(--text-sub);">累計学習時間: <strong>${totalCumulativeMins}分</strong> (${totalHours.toFixed(1)}時間)<br>※90,000分(1500時間)でLv.100</div>
                </div>`;
       html += `<div style="display:flex; justify-content:center; gap:6px; margin-bottom:12px;">
                 <button id="pop-btn-day" style="background:#0a84ff; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;" onclick="renderPopupChart('day')">日別</button>
@@ -1344,7 +1332,17 @@
       const subjects = ['計画', '環境・設備', '法規', '構造', '施工'];
 
       let totalTargetMins = 0, totalActualMins = 0;
-      let subjMap = {}, contMap = {};
+      let subjMap = {};
+
+      const currentWeekDates = getWeekRange(new Date());
+      let currentWeekTargetMins = 0, currentWeekActualMins = 0;
+      currentWeekDates.forEach(d => {
+        const dStr = formatDate(d);
+        currentWeekTargetMins += getDayTargetMins(dStr);
+        studyRecords.filter(r => r.date === dStr).forEach(r => {
+          currentWeekActualMins += r.minutes;
+        });
+      });
 
       targetDateStrs.forEach(dStr => {
         let dayTarget = getDayTargetMins(dStr), dayActual = 0;
@@ -1352,8 +1350,6 @@
         studyRecords.filter(r => r.date === dStr).forEach(r => {
           dayActual += r.minutes; totalActualMins += r.minutes;
           subjMap[r.subject] = (subjMap[r.subject]||0) + r.minutes;
-          const cKey = `${r.subject} - ${r.content}`;
-          contMap[cKey] = (contMap[cKey]||0) + r.minutes;
         });
       });
 
@@ -1418,7 +1414,7 @@
       timeCard.innerHTML = `
         <div style="font-size:13px; font-weight:bold; color:var(--text-sub); margin-bottom:2px;">勉強時間</div>
         <div style="width:68px; height:68px; margin:0 auto 4px auto; background:transparent; display:flex; align-items:center; justify-content:center;">
-          <span style="font-size:16px; font-weight:900; color:var(--rank-gold); text-align:center; line-height:1.1; letter-spacing:-0.5px;">${formatTime(totalCumulativeMins)}</span>
+          <span style="font-size:15px; font-weight:900; color:var(--rank-gold); text-align:center; line-height:1.1; letter-spacing:-0.5px;">${totalCumulativeMins}分</span>
         </div>
         <div style="font-size:12px; font-weight:bold; color:var(--rank-gold); margin-top:2px;">累計</div>
         <div style="font-size:10px; color:var(--text-sub); margin-top:3px;">詳細確認</div>
@@ -1426,22 +1422,84 @@
       timeCard.addEventListener('click', () => { openLevelDetailModal(); });
       subjectsGrid.appendChild(timeCard);
 
-      let sRate = totalTargetMins > 0 ? Math.round((totalActualMins / totalTargetMins) * 100) : (totalActualMins > 0 ? 100 : 0);
-      document.getElementById('res-study-rate-val').innerText = `${sRate}%`;
+      // --- 今週の勉強目標達成率ドーナツ円グラフの描画 (ランクマーク1〜1.2倍のサイズ: 大きさ約150px) ---
+      const pieContainer = document.getElementById('study-pie-chart-container');
+      if(pieContainer) {
+        pieContainer.innerHTML = '';
+        const targetM = currentWeekTargetMins > 0 ? currentWeekTargetMins : 1;
+        const rawRate = Math.round((currentWeekActualMins / targetM) * 100);
+        const displayRate = Math.min(rawRate, 100);
+        const extraRate = Math.max(0, rawRate - 100);
 
-      const dEl = document.getElementById('res-study-detail-stats'); dEl.innerHTML = '';
-      if(Object.keys(subjMap).length === 0) dEl.innerHTML = '<div style="color:var(--text-sub); text-align:center;">データなし</div>';
-      else {
-        Object.keys(subjMap).sort((a,b)=>subjMap[b]-subjMap[a]).forEach(s => {
-          const row = document.createElement('div');
-          row.innerHTML = `<div style="display:flex; justify-content:space-between; font-weight:bold; color:${getSubjectColor(s)}; margin-top:8px;"><span>■ ${s}</span><span>${formatTime(subjMap[s])}</span></div>`;
-          dEl.appendChild(row);
-          Object.keys(contMap).filter(k => k.startsWith(`${s} - `)).sort((a,b)=>contMap[b]-contMap[a]).forEach(c => {
-            const crow = document.createElement('div');
-            crow.innerHTML = `<div style="display:flex; justify-content:space-between; margin-left:16px; color:var(--text-main);"><span>${c.replace(`${s} - `, '')}</span><span>${formatTime(contMap[c])}</span></div>`;
-            dEl.appendChild(crow);
-          });
-        });
+        const svgSize = 150; // 総合ランクマーク(140px)の約1〜1.2倍の大きさ
+        const center = svgSize / 2;
+        const radius = 62;
+        const innerRadius = radius * (2/3); // 半径の2/3の半径の円
+        const circ = 2 * Math.PI * radius;
+
+        const baseDash = (displayRate / 100) * circ;
+        const extraDash = (Math.min(extraRate, 100) / 100) * circ;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', svgSize);
+        svg.setAttribute('height', svgSize);
+        svg.setAttribute('viewBox', `0 0 ${svgSize} ${svgSize}`);
+
+        // 背景トラック
+        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bgCircle.setAttribute('cx', center); bgCircle.setAttribute('cy', center);
+        bgCircle.setAttribute('r', radius);
+        bgCircle.setAttribute('fill', 'none');
+        bgCircle.setAttribute('stroke', '#2c2c2e');
+        bgCircle.setAttribute('stroke-width', '16');
+        svg.appendChild(bgCircle);
+
+        // 100%までのベース進捗（青色）
+        const baseCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        baseCircle.setAttribute('cx', center); baseCircle.setAttribute('cy', center);
+        baseCircle.setAttribute('r', radius);
+        baseCircle.setAttribute('fill', 'none');
+        baseCircle.setAttribute('stroke', '#0a84ff');
+        baseCircle.setAttribute('stroke-width', '16');
+        baseCircle.setAttribute('stroke-dasharray', `${baseDash} ${circ}`);
+        baseCircle.setAttribute('stroke-linecap', 'round');
+        baseCircle.setAttribute('transform', `rotate(-90 ${center} ${center})`);
+        svg.appendChild(baseCircle);
+
+        // 100%超過分の進捗（赤・オレンジ色などわかりやすい色）
+        if(extraRate > 0) {
+          const extraCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          extraCircle.setAttribute('cx', center); extraCircle.setAttribute('cy', center);
+          extraCircle.setAttribute('r', radius);
+          extraCircle.setAttribute('fill', 'none');
+          extraCircle.setAttribute('stroke', '#ff453a');
+          extraCircle.setAttribute('stroke-width', '16');
+          extraCircle.setAttribute('stroke-dasharray', `${extraDash} ${circ}`);
+          extraCircle.setAttribute('stroke-dashoffset', `-${baseDash}`);
+          extraCircle.setAttribute('stroke-linecap', 'round');
+          extraCircle.setAttribute('transform', `rotate(-90 ${center} ${center})`);
+          svg.appendChild(extraCircle);
+        }
+
+        // 中心の内円（カード背景と同じ色でドーナツ型にする）
+        const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        innerCircle.setAttribute('cx', center); innerCircle.setAttribute('cy', center);
+        innerCircle.setAttribute('r', innerRadius);
+        innerCircle.setAttribute('fill', '#1a1a1e');
+        svg.appendChild(innerCircle);
+
+        // 中心に表示する達成率パーセンテージテキスト
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', center); text.setAttribute('y', center);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('font-size', '20px');
+        text.setAttribute('font-weight', 'bold');
+        text.textContent = `${rawRate}%`;
+        svg.appendChild(text);
+
+        pieContainer.appendChild(svg);
       }
     }
 
